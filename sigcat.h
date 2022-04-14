@@ -1,3 +1,4 @@
-void setStreamStderr();
+void setHandlers();
 
-void setStreamStdout();
+void handler(int signum);
+

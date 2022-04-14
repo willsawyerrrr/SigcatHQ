@@ -12,17 +12,7 @@ int main() {
     char* input;
     outputStream = stdout;
 
-    struct sigaction toStdout;
-    memset(&toStdout, 0, sizeof(toStdout));
-    toStdout.sa_handler = setStreamStdout;
-    toStdout.sa_flags = SA_RESTART;
-    sigaction(SIGUSR1, &toStdout, 0);
-
-    struct sigaction toStderr;
-    memset(&toStderr, 0, sizeof(toStderr));
-    toStderr.sa_handler = setStreamStderr;
-    toStderr.sa_flags = SA_RESTART;
-    sigaction(SIGUSR2, &toStderr, 0);
+    setHandlers();
 
     do {
         input = read_line(stdin);
@@ -33,10 +23,26 @@ int main() {
     return 0;
 }
 
-void setStreamStderr() {
-    outputStream = stderr;
+void setHandlers() {
+    // set handler for all signals (1 to 31) to handler method
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = handler;
+    sa.sa_flags = SA_RESTART;
+
+    for (int signum = 1; signum <= 31; signum++) {
+        sigaction(signum, &sa, 0);
+    }
 }
 
-void setStreamStdout() {
-    outputStream = stdout;
+void handler(int signum) {
+    fprintf(outputStream, "sigcat received %s\n", strsignal(signum));
+    fflush(outputStream);
+
+    if (signum == 10) {
+        outputStream = stdout;
+    } else if (signum == 12) {
+        outputStream = stderr;
+    }
 }
+
