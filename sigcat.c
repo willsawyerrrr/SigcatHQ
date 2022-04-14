@@ -1,11 +1,15 @@
+#include "sigcat.h"
+
 #include <csse2310a3.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
+FILE* outputStream;
+
 int main() {
     char* input;
-    FILE* outputStream = stdout;
+    outputStream = stdout;
 
     do {
         input = read_line(stdin);
@@ -14,4 +18,12 @@ int main() {
     } while (!feof(stdin));
 
     return 0;
+}
+
+void setStreamStderr() {
+    outputStream = stderr;
+}
+
+void setStreamStdout() {
+    outputStream = stdout;
 }
