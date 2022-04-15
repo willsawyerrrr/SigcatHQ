@@ -6,6 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define EOF_MIN_EXP_ARGS 2
+#define RCV_MIN_EXP_ARGS 2
+#define SEND_MIN_EXP_ARGS 3
+#define SIGNAL_MIN_EXP_ARGS 3
+#define SLEEP_MIN_EXP_ARGS 2
+#define SPAWN_MIN_EXP_ARGS 2
+
 int main() {
     char* input;
 
@@ -70,7 +77,7 @@ void ignoreInterrupt() {
 }
 
 void spawn(int numArgs, char** args, char* command) {
-    if (!validate_num_args(2, numArgs)) {
+    if (!validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs)) {
         return;
     }
 }
@@ -79,31 +86,31 @@ void report(int numArgs, char** args, char* command) {
 }
 
 void send_signal(int numArgs, char** args, char* command) {
-    if (!validate_num_args(3, numArgs)) {
+    if (!validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)) {
         return;
     }
 }
 
 void sleep(int numArgs, char** args, char* command) {
-    if (!validate_num_args(2, numArgs)) {
+    if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
         return;
     }
 }
 
 void send(int numArgs, char** args, char* command) {
-    if (!validate_num_args(3, numArgs)) {
+    if (!validate_num_args(SEND_MIN_EXP_ARGS, numArgs)) {
         return;
     }
 }
 
 void rcv(int numArgs, char** args, char* command) {
-    if (!validate_num_args(2, numArgs)) {
+    if (!validate_num_args(RCV_MIN_EXP_ARGS, numArgs)) {
         return;
     }
 }
 
 void eof(int numArgs, char** args, char* command) {
-    if (!validate_num_args(2, numArgs)) {
+    if (!validate_num_args(EOF_MIN_EXP_ARGS, numArgs)) {
         return;
     }
 }
