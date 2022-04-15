@@ -10,9 +10,13 @@ int main() {
     do {
         printf("> ");
         input = read_line(stdin);
+        parse(input);
         free(input);
     } while (!feof(stdin));
         
     return 0;
 }
 
+void parse(char* command) {
+    printf("%s\n", command);
+}
