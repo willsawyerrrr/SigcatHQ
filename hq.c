@@ -20,3 +20,28 @@ int main() {
 void parse(char* command) {
     printf("%s\n", command);
 }
+
+void spawn() {
+}
+
+void report() {
+}
+
+void signal() {
+}
+
+void sleep() {
+}
+
+void send() {
+}
+
+void rcv() {
+}
+
+void eof() {
+}
+
+void cleanup() {
+}
+
