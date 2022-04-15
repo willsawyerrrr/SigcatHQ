@@ -15,6 +15,8 @@ int main() {
         printf("> ");
         input = read_line(stdin);
         if (input == NULL) {
+            cleanup();
+            fprintf(stdout, "\n");
             break;
         } else if (!strcmp(input, "")) {
             continue;
