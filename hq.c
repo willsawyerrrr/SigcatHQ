@@ -1,12 +1,15 @@
 #include "hq.h"
 
 #include <csse2310a3.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 int main() {
     char* input;
+
+    ignoreInterrupt();
 
     do {
         printf("> ");
@@ -48,6 +51,14 @@ void parse(char* command) {
     }
     free(numArgs);
     free(args);
+}
+
+void ignoreInterrupt() {
+    struct sigaction ignore;
+    memset(&ignore, 0, sizeof(ignore));
+    ignore.sa_handler = SIG_IGN;
+    ignore.sa_flags = SA_RESTART;
+    sigaction(SIGINT, &ignore, 0);
 }
 
 void spawn(int numArgs, char** args, char* command) {

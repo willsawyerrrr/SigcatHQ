@@ -1,3 +1,11 @@
+/**
+ * Sets the handler to ignore the interrupt signal (SIGINT).
+ */
+void ignoreInterrupt();
+
+/**
+ * Parse the given command strintg.
+ */
 void parse(char* command);
 
 void spawn(int numArgs, char** args, char* command);
