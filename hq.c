@@ -14,6 +14,11 @@ int main() {
     do {
         printf("> ");
         input = read_line(stdin);
+        if (input == NULL) {
+            break;
+        } else if (!strcmp(input, "")) {
+            continue;
+        }
         parse(input);
     } while (!feof(stdin));
      
@@ -24,6 +29,10 @@ void parse(char* command) {
     int* numArgs = malloc(sizeof(int));
     char** args = split_space_not_quote(command, numArgs);
 
+    if (!numArgs) {
+        return;
+    }
+    
     char* program = args[0];
 
     if (!strcmp(program, "spawn")) {
