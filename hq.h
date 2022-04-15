@@ -1,3 +1,6 @@
+#ifndef HQ_H
+#define HQ_H
+
 /**
  * Sets the handler to ignore the interrupt signal (SIGINT).
  */
@@ -28,3 +31,4 @@ int validate_num_args(int minExpected, int given);
 
 int validate_job_id(int jobId);
 
+#endif
