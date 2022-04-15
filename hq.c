@@ -51,24 +51,42 @@ void parse(char* command) {
 }
 
 void spawn(int numArgs, char** args, char* command) {
+    if (numArgs < 2) {
+        printf("Error: Insufficient arguments\n");
+    }
 }
 
 void report(int numArgs, char** args, char* command) {
 }
 
 void send_signal(int numArgs, char** args, char* command) {
+    if (numArgs < 3) {
+        printf("Error: Insufficient arguments\n");
+    }
 }
 
 void sleep(int numArgs, char** args, char* command) {
+    if (numArgs < 2) {
+        printf("Error: Insufficient arguments\n");
+    }
 }
 
 void send(int numArgs, char** args, char* command) {
+    if (numArgs < 3) {
+        printf("Error: Insufficient arguments\n");
+    }
 }
 
 void rcv(int numArgs, char** args, char* command) {
+    if (numArgs < 2) {
+        printf("Error: Insufficient arguments\n");
+    }
 }
 
 void eof(int numArgs, char** args, char* command) {
+    if (numArgs < 2) {
+        printf("Error: Insufficient arguments\n");
+    }
 }
 
 void cleanup(int numArgs, char** args, char* command) {
