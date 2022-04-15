@@ -55,9 +55,6 @@ void parse(char* command) {
         printf("Error: Invalid command\n");
     }
 
-    for (int i = 0; i < *numArgs - 1; i++) {
-        free(args[i]);
-    }
     free(numArgs);
     free(args);
 }
