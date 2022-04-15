@@ -31,7 +31,7 @@ void parse(char* command) {
     int* numArgs = malloc(sizeof(int));
     char** args = split_space_not_quote(command, numArgs);
 
-    if (!numArgs) {
+    if (!*numArgs) {
         return;
     }
     
