@@ -70,8 +70,8 @@ void ignoreInterrupt() {
 }
 
 void spawn(int numArgs, char** args, char* command) {
-    if (numArgs < 2) {
-        printf("Error: Insufficient arguments\n");
+    if (!validate_num_args(2, numArgs)) {
+        return;
     }
 }
 
@@ -79,35 +79,48 @@ void report(int numArgs, char** args, char* command) {
 }
 
 void send_signal(int numArgs, char** args, char* command) {
-    if (numArgs < 3) {
-        printf("Error: Insufficient arguments\n");
+    if (!validate_num_args(3, numArgs)) {
+        return;
     }
 }
 
 void sleep(int numArgs, char** args, char* command) {
-    if (numArgs < 2) {
-        printf("Error: Insufficient arguments\n");
+    if (!validate_num_args(2, numArgs)) {
+        return;
     }
 }
 
 void send(int numArgs, char** args, char* command) {
-    if (numArgs < 3) {
-        printf("Error: Insufficient arguments\n");
+    if (!validate_num_args(3, numArgs)) {
+        return;
     }
 }
 
 void rcv(int numArgs, char** args, char* command) {
-    if (numArgs < 2) {
-        printf("Error: Insufficient arguments\n");
+    if (!validate_num_args(2, numArgs)) {
+        return;
     }
 }
 
 void eof(int numArgs, char** args, char* command) {
-    if (numArgs < 2) {
-        printf("Error: Insufficient arguments\n");
+    if (!validate_num_args(2, numArgs)) {
+        return;
     }
 }
 
 void cleanup() {
+}
+
+int validate_num_args(int minExpected, int given) {
+    if (given >= minExpected) {
+        return 1;
+    }
+    printf("Error: insufficient arguments\n");
+    return 0;
+}
+
+int validate_job_id(int jobId) {
+    printf("Error: Invalid job\n");
+    return 0; // all jobIds are invalid
 }
 

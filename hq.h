@@ -24,3 +24,7 @@ void eof(int numArgs, char** args, char* command);
 
 void cleanup();
 
+int validate_num_args(int minExpected, int given);
+
+int validate_job_id(int jobId);
+
