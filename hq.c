@@ -3,6 +3,7 @@
 #include <csse2310a3.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main() {
     char* input;
@@ -11,37 +12,65 @@ int main() {
         printf("> ");
         input = read_line(stdin);
         parse(input);
-        free(input);
     } while (!feof(stdin));
-        
+     
     return 0;
 }
 
 void parse(char* command) {
-    printf("%s\n", command);
+    int* numArgs = malloc(sizeof(int));
+    char** args = split_space_not_quote(command, numArgs);
+
+    char* program = args[0];
+
+    if (!strcmp(program, "spawn")) {
+        spawn(*numArgs, args, command);
+    } else if (!strcmp(program, "report")) {
+        report(*numArgs, args, command);
+    } else if (!strcmp(program, "signal")) {
+        send_signal(*numArgs, args, command);
+    } else if (!strcmp(program, "sleep")) {
+        sleep(*numArgs, args, command);
+    } else if (!strcmp(program, "send")) {
+        send(*numArgs, args, command);
+    } else if (!strcmp(program, "rcv")) {
+        rcv(*numArgs, args, command);
+    } else if (!strcmp(program, "eof")) {
+        eof(*numArgs, args, command);
+    } else if (!strcmp(program, "cleanup")) {
+        cleanup(*numArgs, args, command);
+    } else {
+        printf("Error: Invalid command\n");
+    }
+
+    for (int i = 0; i < *numArgs - 1; i++) {
+        free(args[i]);
+    }
+    free(numArgs);
+    free(args);
 }
 
-void spawn() {
+void spawn(int numArgs, char** args, char* command) {
 }
 
-void report() {
+void report(int numArgs, char** args, char* command) {
 }
 
-void signal() {
+void send_signal(int numArgs, char** args, char* command) {
 }
 
-void sleep() {
+void sleep(int numArgs, char** args, char* command) {
 }
 
-void send() {
+void send(int numArgs, char** args, char* command) {
 }
 
-void rcv() {
+void rcv(int numArgs, char** args, char* command) {
 }
 
-void eof() {
+void eof(int numArgs, char** args, char* command) {
 }
 
-void cleanup() {
+void cleanup(int numArgs, char** args, char* command) {
 }
 

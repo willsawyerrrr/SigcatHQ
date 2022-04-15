@@ -1,18 +1,18 @@
 void parse(char* command);
 
-void spawn();
+void spawn(int numArgs, char** args, char* command);
 
-void report();
+void report(int numArgs, char** args, char* command);
 
-void signal();
+void send_signal(int numArgs, char** args, char* command);
 
-void sleep();
+void sleep(int numArgs, char** args, char* command);
 
-void send();
+void send(int numArgs, char** args, char* command);
 
-void rcv();
+void rcv(int numArgs, char** args, char* command);
 
-void eof();
+void eof(int numArgs, char** args, char* command);
 
-void cleanup();
+void cleanup(int numArgs, char** args, char* command);
 
