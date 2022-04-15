@@ -50,7 +50,7 @@ void parse(char* command) {
     } else if (!strcmp(program, "eof")) {
         eof(*numArgs, args, command);
     } else if (!strcmp(program, "cleanup")) {
-        cleanup(*numArgs, args, command);
+        cleanup();
     } else {
         printf("Error: Invalid command\n");
     }
@@ -106,6 +106,6 @@ void eof(int numArgs, char** args, char* command) {
     }
 }
 
-void cleanup(int numArgs, char** args, char* command) {
+void cleanup() {
 }
 

@@ -22,5 +22,5 @@ void rcv(int numArgs, char** args, char* command);
 
 void eof(int numArgs, char** args, char* command);
 
-void cleanup(int numArgs, char** args, char* command);
+void cleanup();
 
