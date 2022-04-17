@@ -14,22 +14,21 @@
 #define SPAWN_MIN_EXP_ARGS 2
 
 int main() {
-    char* input;
-
     ignore_interrupt();
 
-    do {
-        printf("> ");
-        input = read_line(stdin);
-        if (input == NULL) {
-            cleanup();
-            fprintf(stdout, "\n");
-            break;
-        } else if (!strcmp(input, "")) {
-            continue;
+    char* input;
+    printf("> ");
+    fflush(stdout);
+    input = read_line(stdin);
+    while (input) { // while input != NULL
+        if (strcmp(input, "")) { // if input is non-empty
+            parse(input);
         }
-        parse(input);
-    } while (!feof(stdin));
+        free(input);
+        printf("> ");
+        fflush(stdout);
+        input = read_line(stdin);
+    }
      
     return 0;
 }
