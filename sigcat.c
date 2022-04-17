@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+/** Current output stream for the program. */
 FILE* outputStream;
 
 int main() {
