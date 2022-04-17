@@ -1,7 +1,7 @@
 /**
- * Sets the handler for all signals (1 to 31) to the below handler method.
+ * Sets the handler for all signals (1 to 31) to the handler method.
  */
-void setHandlers();
+void set_handlers();
 
 /**
  * Print the following text:

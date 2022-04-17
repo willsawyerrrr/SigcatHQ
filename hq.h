@@ -4,7 +4,7 @@
 /**
  * Sets the handler to ignore the interrupt signal (SIGINT).
  */
-void ignoreInterrupt();
+void ignore_interrupt();
 
 /**
  * Parse the given command strintg.

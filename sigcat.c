@@ -12,7 +12,7 @@ int main() {
     char* input;
     outputStream = stdout;
 
-    setHandlers();
+    set_handlers();
 
     do {
         input = read_line(stdin);
@@ -27,8 +27,7 @@ int main() {
     return 0;
 }
 
-void setHandlers() {
-    // set handler for all signals (1 to 31) to handler method
+void set_handlers() {
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = handler;

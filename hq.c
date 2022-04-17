@@ -16,7 +16,7 @@
 int main() {
     char* input;
 
-    ignoreInterrupt();
+    ignore_interrupt();
 
     do {
         printf("> ");
@@ -68,7 +68,7 @@ void parse(char* command) {
     free(args);
 }
 
-void ignoreInterrupt() {
+void ignore_interrupt() {
     struct sigaction ignore;
     memset(&ignore, 0, sizeof(ignore));
     ignore.sa_handler = SIG_IGN;
