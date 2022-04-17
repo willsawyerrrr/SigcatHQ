@@ -13,17 +13,29 @@ void parse(char* command);
 
 void spawn(int numArgs, char** args, char* command);
 
+int validate_spawn_args(int numArgs, char** args, char* command);
+
 void report(int numArgs, char** args, char* command);
 
 void send_signal(int numArgs, char** args, char* command);
 
+int validate_signal_args(int numArgs, char** args, char* command);
+
 void sleep(int numArgs, char** args, char* command);
+
+int validate_sleep_args(int numArgs, char** args, char* command);
 
 void send(int numArgs, char** args, char* command);
 
+int validate_send_args(int numArgs, char** args, char* command);
+
 void rcv(int numArgs, char** args, char* command);
 
+int validate_rcv_args(int numArgs, char** args, char* command);
+
 void eof(int numArgs, char** args, char* command);
+
+int validate_eof_args(int numArgs, char** args, char* command);
 
 void cleanup();
 

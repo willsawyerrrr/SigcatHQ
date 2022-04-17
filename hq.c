@@ -76,42 +76,101 @@ void ignore_interrupt() {
 }
 
 void spawn(int numArgs, char** args, char* command) {
-    if (!validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_spawn_args(numArgs, args, command)) {
         return;
     }
+}
+
+int validate_spawn_args(int numArgs, char** args, char* command) {
+    if (!validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs)) {
+        return 0;
+    }
+
+    // check args
+    return 0;
 }
 
 void report(int numArgs, char** args, char* command) {
 }
 
+int validate_report_args(int numArgs, char** args, char* command) {
+    // check args
+    return 0;
+}
+
 void send_signal(int numArgs, char** args, char* command) {
-    if (!validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_signal_args(numArgs, args, command)) {
         return;
     }
+}
+
+int validate_signal_args(int numArgs, char** args, char* command) {
+    if (!validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)) {
+        return 0;
+    }
+
+    // check args
+    return 0;
 }
 
 void sleep(int numArgs, char** args, char* command) {
-    if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_sleep_args(numArgs, args, command)) {
         return;
     }
+}
+
+int validate_sleep_args(int numArgs, char** args, char* command) {
+    if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
+        return 0;
+    }
+
+    // check args
+    return 0;
 }
 
 void send(int numArgs, char** args, char* command) {
-    if (!validate_num_args(SEND_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_send_args(numArgs, args, command)) {
         return;
     }
+}
+
+int validate_send_args(int numArgs, char** args, char* command) {
+    if (!validate_num_args(SEND_MIN_EXP_ARGS, numArgs)) {
+        return 0;
+    }
+
+    // check args
+    return 0;
 }
 
 void rcv(int numArgs, char** args, char* command) {
-    if (!validate_num_args(RCV_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_rcv_args(numArgs, args, command)) {
         return;
     }
 }
 
+int validate_rcv_args(int numArgs, char** args, char* command) {
+    if (!validate_num_args(RCV_MIN_EXP_ARGS, numArgs)) {
+        return 0;
+    }
+
+    // check args
+    return 0;
+}
+
 void eof(int numArgs, char** args, char* command) {
-    if (!validate_num_args(EOF_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_eof_args(numArgs, args, command)) {
         return;
     }
+}
+
+int validate_eof_args(int numArgs, char** args, char* command) {
+    if (!validate_num_args(EOF_MIN_EXP_ARGS, numArgs)) {
+        return 0;
+    }
+
+    // check args
+    return 0;
 }
 
 void cleanup() {
