@@ -128,12 +128,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_spawn_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs)) {
-        return 0;
-    }
-
-    // check args
-    return 0;
+    return validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs);
 }
 
 void report(int numArgs, char** args, ChildList* childList) {
@@ -243,5 +238,16 @@ int validate_job_id(int jobId, ChildList* childList) {
 
 int validate_numerical_arg(char* arg) {
     return 0; // no args are numerical
+}
+
+Child* get_child_by_jobid(ChildList* childList, int jobId) {
+    Child** children = childList->children;
+    for (int i = 0; children[i]; i++) {
+        if (children[i]->jobId == jobId) {
+            return children[i];
+        }
+    }
+
+    return NULL;
 }
 

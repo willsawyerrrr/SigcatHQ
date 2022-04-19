@@ -212,11 +212,18 @@ void cleanup();
 int validate_num_args(int minExpected, int given);
 
 /*
- * Determines whether the given jobId is valid.
+ * Determines whether the given job ID is valid.
  *
  * Returns 1 (true) if and only if jobId is the id of a child of this process;
  * 0 (false) otherwise.
  */
 int validate_job_id(int jobId, ChildList* childList);
+
+/**
+ * Returns the child process specified by the given job ID.
+ *
+ * If no child has the given job ID, NULL is returned.
+ */
+Child* get_child_by_jobid(ChildList* childList, int jobId);
 
 #endif
