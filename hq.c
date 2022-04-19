@@ -90,6 +90,41 @@ void spawn(int numArgs, char** args, ChildList* childList) {
     if (!validate_spawn_args(numArgs, args, childList)) {
         return;
     }
+
+    int pToC[2];
+    pipe(pToC); // parent to child
+
+    int cToP[2];
+    pipe(cToP); // child to parent
+
+    int childId = fork();
+    if (childId) { // parent
+        close(pToC[0]); // close parent to child read end
+        close(cToP[1]); // close child to parent write end
+
+        // create new child struct
+        Child* child = malloc(sizeof(Child*));
+        child->processId = childId;
+        child->jobId = childList->numChildren;
+        child->pToC = pToC[1];
+        child->cToP = cToP[0];
+        
+        // add the child to the list
+        childList->children = realloc(childList->children,
+                sizeof(Child*) * (childList->numChildren + 1));
+        childList->children[childList->numChildren] = child;
+        childList->numChildren++;
+
+        printf("New Job ID [%d] created\n", childId);
+        fflush(stdout);
+    } else { // child
+        close(pToC[1]); // close parent to child write end
+        close(cToP[0]); // close child to parent read end
+        
+        if (execvp(args[1], args) == -1) {
+            exit(99);
+        }
+    }
 }
 
 int validate_spawn_args(int numArgs, char** args, ChildList* childList) {
