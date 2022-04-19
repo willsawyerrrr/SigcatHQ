@@ -44,19 +44,19 @@ void parse(char* command) {
     char* program = args[0];
 
     if (!strcmp(program, "spawn")) {
-        spawn(*numArgs, args, command);
+        spawn(*numArgs, args);
     } else if (!strcmp(program, "report")) {
-        report(*numArgs, args, command);
+        report(*numArgs, args);
     } else if (!strcmp(program, "signal")) {
-        send_signal(*numArgs, args, command);
+        send_signal(*numArgs, args);
     } else if (!strcmp(program, "sleep")) {
-        sleep(*numArgs, args, command);
+        sleep_hq(*numArgs, args);
     } else if (!strcmp(program, "send")) {
-        send(*numArgs, args, command);
+        send(*numArgs, args);
     } else if (!strcmp(program, "rcv")) {
-        rcv(*numArgs, args, command);
+        rcv(*numArgs, args);
     } else if (!strcmp(program, "eof")) {
-        eof(*numArgs, args, command);
+        eof(*numArgs, args);
     } else if (!strcmp(program, "cleanup")) {
         cleanup();
     } else {
@@ -75,13 +75,13 @@ void ignore_interrupt() {
     sigaction(SIGINT, &ignore, 0);
 }
 
-void spawn(int numArgs, char** args, char* command) {
-    if (!validate_spawn_args(numArgs, args, command)) {
+void spawn(int numArgs, char** args) {
+    if (!validate_spawn_args(numArgs, args)) {
         return;
     }
 }
 
-int validate_spawn_args(int numArgs, char** args, char* command) {
+int validate_spawn_args(int numArgs, char** args) {
     if (!validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -90,21 +90,21 @@ int validate_spawn_args(int numArgs, char** args, char* command) {
     return 0;
 }
 
-void report(int numArgs, char** args, char* command) {
+void report(int numArgs, char** args) {
 }
 
-int validate_report_args(int numArgs, char** args, char* command) {
+int validate_report_args(int numArgs, char** args) {
     // check args
     return 0;
 }
 
-void send_signal(int numArgs, char** args, char* command) {
-    if (!validate_signal_args(numArgs, args, command)) {
+void send_signal(int numArgs, char** args) {
+    if (!validate_signal_args(numArgs, args)) {
         return;
     }
 }
 
-int validate_signal_args(int numArgs, char** args, char* command) {
+int validate_signal_args(int numArgs, char** args) {
     if (!validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -113,13 +113,13 @@ int validate_signal_args(int numArgs, char** args, char* command) {
     return 0;
 }
 
-void sleep(int numArgs, char** args, char* command) {
-    if (!validate_sleep_args(numArgs, args, command)) {
+void sleep_hq(int numArgs, char** args) {
+    if (!validate_sleep_args(numArgs, args)) {
         return;
     }
 }
 
-int validate_sleep_args(int numArgs, char** args, char* command) {
+int validate_sleep_args(int numArgs, char** args) {
     if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -128,13 +128,13 @@ int validate_sleep_args(int numArgs, char** args, char* command) {
     return 0;
 }
 
-void send(int numArgs, char** args, char* command) {
-    if (!validate_send_args(numArgs, args, command)) {
+void send(int numArgs, char** args) {
+    if (!validate_send_args(numArgs, args)) {
         return;
     }
 }
 
-int validate_send_args(int numArgs, char** args, char* command) {
+int validate_send_args(int numArgs, char** args) {
     if (!validate_num_args(SEND_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -143,13 +143,13 @@ int validate_send_args(int numArgs, char** args, char* command) {
     return 0;
 }
 
-void rcv(int numArgs, char** args, char* command) {
-    if (!validate_rcv_args(numArgs, args, command)) {
+void rcv(int numArgs, char** args) {
+    if (!validate_rcv_args(numArgs, args)) {
         return;
     }
 }
 
-int validate_rcv_args(int numArgs, char** args, char* command) {
+int validate_rcv_args(int numArgs, char** args) {
     if (!validate_num_args(RCV_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -158,13 +158,13 @@ int validate_rcv_args(int numArgs, char** args, char* command) {
     return 0;
 }
 
-void eof(int numArgs, char** args, char* command) {
-    if (!validate_eof_args(numArgs, args, command)) {
+void eof(int numArgs, char** args) {
+    if (!validate_eof_args(numArgs, args)) {
         return;
     }
 }
 
-int validate_eof_args(int numArgs, char** args, char* command) {
+int validate_eof_args(int numArgs, char** args) {
     if (!validate_num_args(EOF_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
