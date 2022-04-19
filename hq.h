@@ -2,6 +2,33 @@
 #define HQ_H
 
 /*
+ * Structure type to hold a child process - created within spawn.
+ */
+typedef struct {
+    /* Process ID of the newly created child, relative to the kernel. */
+    int processId;
+    /* Job ID of the newly created child, relative to hq. */
+    int jobId;
+    /* File descriptor for the pipe used to write from the parent (hq) to this
+     * child process. */
+    int pToC;
+    /* File descriptor for the pipe used to read from this child within its
+     * parent (hq).
+     */
+    int cToP;
+} Child;
+
+/*
+ * Structure type to holf all children processes created by spawn.
+ */
+typedef struct {
+    /* The number of children processes this process has spawned. */
+    int numChildren;
+    /* Array of pointers to the children processes this process has spawned. */
+    Child** children;
+} ChildList;
+
+/*
  * Sets a handler to ignore the interrupt signal.
  */
 void ignore_interrupt();
@@ -10,7 +37,7 @@ void ignore_interrupt();
  * Parses the given command string. If the first argument of the command string
  * is the name of a command, that command is called.
  */
-void parse(char* command);
+void parse(char* command, ChildList* childList);
 
 /*
  * Usage: spawn <program> [<arg1>] [<arg2>] ...
@@ -21,7 +48,7 @@ void parse(char* command);
  * with the send and rcv commands, respectively. The new process's standard
  * error is unchanged.
  */
-void spawn(int numArgs, char** args);
+void spawn(int numArgs, char** args, ChildList* childList);
 
 /*
  * Determines whether the given command string is valid to execute the spawn
@@ -34,7 +61,7 @@ void spawn(int numArgs, char** args);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_spawn_args(int numArgs, char** args);
+int validate_spawn_args(int numArgs, char** args, ChildList* childList);
 
 /*
  * Usage: report [<jobid>]
@@ -42,7 +69,7 @@ int validate_spawn_args(int numArgs, char** args);
  * Reports on the status of the job with the given job ID or all jobs if the
  * jobid parameter is not provided.
  */
-void report(int numArgs, char** args);
+void report(int numArgs, char** args, ChildList* childList);
 
 /*
  * Determines whether the given command string is valid to execute the report
@@ -56,14 +83,14 @@ void report(int numArgs, char** args);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_report_args(int numArgs, char** args);
+int validate_report_args(int numArgs, char** args, ChildList* childList);
 
 /*
  * Usage: signal <jobid> <signum>
  *
  * Send the signal with the given signum to the job with the given job ID.
  */
-void send_signal(int numArgs, char** args);
+void send_signal(int numArgs, char** args, ChildList* childList);
 
 /*
  * Determines whether the given command string is valid to execute the signal
@@ -78,7 +105,7 @@ void send_signal(int numArgs, char** args);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_signal_args(int numArgs, char** args);
+int validate_signal_args(int numArgs, char** args, ChildList* childList);
 
 /*
  * Usage: sleep <seconds>
@@ -86,7 +113,7 @@ int validate_signal_args(int numArgs, char** args);
  * Causes this process to sleep for the given number of seconds. The specified
  * number of seconds can be integral or fractional.
  */
-void sleep_hq(int numArgs, char** args);
+void sleep_hq(int numArgs, char** args, ChildList* childList);
 
 /*
  * Determines whether the given command string is valid to execute the sleep
@@ -99,7 +126,7 @@ void sleep_hq(int numArgs, char** args);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_sleep_args(int numArgs, char** args);
+int validate_sleep_args(int numArgs, char** args, ChildList* childList);
 
 /*
  * Usage: send <jobid> <text>
@@ -107,7 +134,7 @@ int validate_sleep_args(int numArgs, char** args);
  * Sends the given text to the job with the given job ID. Strings containing
  * spaces must be quoted in double quotes.
  */
-void send(int numArgs, char** args);
+void send(int numArgs, char** args, ChildList* childList);
 
 /*
  * Determines whether the given command string is valid to execute the send
@@ -122,7 +149,7 @@ void send(int numArgs, char** args);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_send_args(int numArgs, char** args);
+int validate_send_args(int numArgs, char** args, ChildList* childList);
 
 /*
  * Usage: rcv <jobid>
@@ -130,7 +157,7 @@ int validate_send_args(int numArgs, char** args);
  * Attempts to read one line of text from the job with the given job ID and
  * displays it to this process's standard out.
  */
-void rcv(int numArgs, char** args);
+void rcv(int numArgs, char** args, ChildList* childList);
 
 /*
  * Determines whether the given command string is valid to execute the rcv
@@ -144,7 +171,7 @@ void rcv(int numArgs, char** args);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_rcv_args(int numArgs, char** args);
+int validate_rcv_args(int numArgs, char** args, ChildList* childList);
 
 /*
  * Usage: eof <jobid>
@@ -152,7 +179,7 @@ int validate_rcv_args(int numArgs, char** args);
  * Closes the pipe connected to the standard input of the job with the given
  * job ID, causing it to receive EOF on its next read attempt.
  */
-void eof(int numArgs, char** args);
+void eof(int numArgs, char** args, ChildList* childList);
 
 /*
  * Determines whether the given command string is valid to execute the eof
@@ -166,7 +193,7 @@ void eof(int numArgs, char** args);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_eof_args(int numArgs, char** args);
+int validate_eof_args(int numArgs, char** args, ChildList* childList);
 
 /*
  * Usage: cleanup()
@@ -190,6 +217,6 @@ int validate_num_args(int minExpected, int given);
  * Returns 1 (true) if and only if jobId is the id of a child of this process;
  * 0 (false) otherwise.
  */
-int validate_job_id(int jobId);
+int validate_job_id(int jobId, ChildList* childList);
 
 #endif

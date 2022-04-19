@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define EOF_MIN_EXP_ARGS 2
 #define RCV_MIN_EXP_ARGS 2
@@ -16,24 +17,34 @@
 int main() {
     ignore_interrupt();
 
+    ChildList* childList = malloc(sizeof(ChildList*));
+    childList->numChildren = 0;
+    Child** children = malloc(sizeof(Child*));
+    childList->children = children;
+
     char* input;
     printf("> ");
     fflush(stdout);
     input = read_line(stdin);
     while (input) { // while input != NULL
         if (strcmp(input, "")) { // if input is non-empty
-            parse(input);
+            parse(input, childList);
         }
         free(input);
         printf("> ");
         fflush(stdout);
         input = read_line(stdin);
     }
+
+    for (int i = 0; childList->children[i]; i++) {
+        free(childList->children[i]);
+    }
+    free(childList);
      
     return 0;
 }
 
-void parse(char* command) {
+void parse(char* command, ChildList* childList) {
     int* numArgs = malloc(sizeof(int));
     char** args = split_space_not_quote(command, numArgs);
 
@@ -44,19 +55,19 @@ void parse(char* command) {
     char* program = args[0];
 
     if (!strcmp(program, "spawn")) {
-        spawn(*numArgs, args);
+        spawn(*numArgs, args, childList);
     } else if (!strcmp(program, "report")) {
-        report(*numArgs, args);
+        report(*numArgs, args, childList);
     } else if (!strcmp(program, "signal")) {
-        send_signal(*numArgs, args);
+        send_signal(*numArgs, args, childList);
     } else if (!strcmp(program, "sleep")) {
-        sleep_hq(*numArgs, args);
+        sleep_hq(*numArgs, args, childList);
     } else if (!strcmp(program, "send")) {
-        send(*numArgs, args);
+        send(*numArgs, args, childList);
     } else if (!strcmp(program, "rcv")) {
-        rcv(*numArgs, args);
+        rcv(*numArgs, args, childList);
     } else if (!strcmp(program, "eof")) {
-        eof(*numArgs, args);
+        eof(*numArgs, args, childList);
     } else if (!strcmp(program, "cleanup")) {
         cleanup();
     } else {
@@ -75,13 +86,13 @@ void ignore_interrupt() {
     sigaction(SIGINT, &ignore, 0);
 }
 
-void spawn(int numArgs, char** args) {
-    if (!validate_spawn_args(numArgs, args)) {
+void spawn(int numArgs, char** args, ChildList* childList) {
+    if (!validate_spawn_args(numArgs, args, childList)) {
         return;
     }
 }
 
-int validate_spawn_args(int numArgs, char** args) {
+int validate_spawn_args(int numArgs, char** args, ChildList* childList) {
     if (!validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -90,21 +101,21 @@ int validate_spawn_args(int numArgs, char** args) {
     return 0;
 }
 
-void report(int numArgs, char** args) {
+void report(int numArgs, char** args, ChildList* childList) {
 }
 
-int validate_report_args(int numArgs, char** args) {
+int validate_report_args(int numArgs, char** args, ChildList* childList) {
     // check args
     return 0;
 }
 
-void send_signal(int numArgs, char** args) {
-    if (!validate_signal_args(numArgs, args)) {
+void send_signal(int numArgs, char** args, ChildList* childList) {
+    if (!validate_signal_args(numArgs, args, childList)) {
         return;
     }
 }
 
-int validate_signal_args(int numArgs, char** args) {
+int validate_signal_args(int numArgs, char** args, ChildList* childList) {
     if (!validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -113,13 +124,13 @@ int validate_signal_args(int numArgs, char** args) {
     return 0;
 }
 
-void sleep_hq(int numArgs, char** args) {
-    if (!validate_sleep_args(numArgs, args)) {
+void sleep_hq(int numArgs, char** args, ChildList* childList) {
+    if (!validate_sleep_args(numArgs, args, childList)) {
         return;
     }
 }
 
-int validate_sleep_args(int numArgs, char** args) {
+int validate_sleep_args(int numArgs, char** args, ChildList* childList) {
     if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -128,13 +139,13 @@ int validate_sleep_args(int numArgs, char** args) {
     return 0;
 }
 
-void send(int numArgs, char** args) {
-    if (!validate_send_args(numArgs, args)) {
+void send(int numArgs, char** args, ChildList* childList) {
+    if (!validate_send_args(numArgs, args, childList)) {
         return;
     }
 }
 
-int validate_send_args(int numArgs, char** args) {
+int validate_send_args(int numArgs, char** args, ChildList* childList) {
     if (!validate_num_args(SEND_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -143,13 +154,13 @@ int validate_send_args(int numArgs, char** args) {
     return 0;
 }
 
-void rcv(int numArgs, char** args) {
-    if (!validate_rcv_args(numArgs, args)) {
+void rcv(int numArgs, char** args, ChildList* childList) {
+    if (!validate_rcv_args(numArgs, args, childList)) {
         return;
     }
 }
 
-int validate_rcv_args(int numArgs, char** args) {
+int validate_rcv_args(int numArgs, char** args, ChildList* childList) {
     if (!validate_num_args(RCV_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -158,13 +169,13 @@ int validate_rcv_args(int numArgs, char** args) {
     return 0;
 }
 
-void eof(int numArgs, char** args) {
-    if (!validate_eof_args(numArgs, args)) {
+void eof(int numArgs, char** args, ChildList* childList) {
+    if (!validate_eof_args(numArgs, args, childList)) {
         return;
     }
 }
 
-int validate_eof_args(int numArgs, char** args) {
+int validate_eof_args(int numArgs, char** args, ChildList* childList) {
     if (!validate_num_args(EOF_MIN_EXP_ARGS, numArgs)) {
         return 0;
     }
@@ -184,8 +195,18 @@ int validate_num_args(int minExpected, int given) {
     return 0;
 }
 
-int validate_job_id(int jobId) {
+int validate_job_id(int jobId, ChildList* childList) {
+    Child** children = childList->children;
+    for (int i = 0; children[i]; i++) {
+        if (children[i]->jobId == jobId) {
+            return 1;
+        }
+    }
     printf("Error: Invalid job\n");
-    return 0; // all jobIds are invalid
+    return 0;
+}
+
+int validate_numerical_arg(char* arg) {
+    return 0; // no args are numerical
 }
 
