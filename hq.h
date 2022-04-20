@@ -75,6 +75,8 @@ int validate_spawn_args(int numArgs, char** args, ChildList* childList);
  */
 void report(int numArgs, char** args, ChildList* childList);
 
+void report_single(Child* child);
+
 /*
  * Determines whether the given command string is valid to execute the report
  * command.
@@ -222,6 +224,8 @@ int validate_num_args(int minExpected, int given);
  * 0 (false) otherwise.
  */
 int validate_job_id(int jobId, ChildList* childList);
+
+int validate_numerical_arg(char* arg);
 
 /**
  * Returns the child process specified by the given job ID.

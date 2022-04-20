@@ -99,7 +99,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         close(cToP[1]); // close child to parent write end
 
         // create new child struct
-        Child* child = malloc(sizeof(Child*));
+        Child* child = malloc(sizeof(Child));
         child->processId = childId;
         child->jobId = childList->numChildren;
         child->programName= malloc(sizeof(char));
@@ -109,7 +109,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         
         // add the child to the list
         childList->children = realloc(childList->children,
-                sizeof(Child*) * (childList->numChildren + 1));
+                sizeof(Child) * (childList->numChildren + 1));
         childList->children[childList->numChildren] = child;
         childList->numChildren++;
 
@@ -133,33 +133,43 @@ int validate_spawn_args(int numArgs, char** args, ChildList* childList) {
 }
 
 void report(int numArgs, char** args, ChildList* childList) {
+    if (!validate_report_args(numArgs, args, childList)) {
+        return;
+    }
     Child** children = childList->children;
-    Child* child;
+    printf("[Job] cmd:status\n");
+    if (numArgs > 1) {
+        Child* child = get_child_by_job_id(atoi(args[1]), childList);
+        report_single(child);
+    } else {
+        for (int i = 0; children[i]; i++) {
+            report_single(children[i]);
+        }
+    }
+}
+
+void report_single(Child* child) {
     int statusCode = 0;
     char* status = malloc(sizeof(char));
-
-    printf("[Job] cmd:status\n");
-    for (int i = 0; children[i]; i++) {
-        child = children[i];
-        if (waitpid(child->processId, &statusCode, WNOHANG) != -1) {
-            if (WIFEXITED(statusCode)) {
-                sprintf(status, "exited(%d)", WEXITSTATUS(statusCode));
-            } else if (WIFSIGNALED(statusCode)) {
-                sprintf(status, "signalled(%d)", WTERMSIG(statusCode));
-            } else {
-                strcpy(status, "running");
-            }
-        }
-        printf("[%d] %s:%s\n", child->jobId, child->programName, status);
-    }
     
+    if (waitpid(child->processId, &statusCode, WNOHANG) != -1) {
+        if (WIFEXITED(statusCode)) {
+            sprintf(status, "exited(%d)", WEXITSTATUS(statusCode));
+        } else if (WIFSIGNALED(statusCode)) {
+            sprintf(status, "signalled(%d)", WTERMSIG(statusCode));
+        } else {
+            strcpy(status, "running");
+        }
+    }
+
+    printf("[%d] %s:%s\n", child->jobId, child->programName, status);
     fflush(stdout);
     free(status);
 }
 
 int validate_report_args(int numArgs, char** args, ChildList* childList) {
-    // check args
-    return 0;
+    // valid if no job ID argument is given or if it is a valid number
+    return (numArgs == 1 || validate_numerical_arg(args[1]));
 }
 
 void send_signal(int numArgs, char** args, ChildList* childList) {
@@ -272,9 +282,9 @@ Child* get_child_by_job_id(int jobId, ChildList* childList) {
 }
 
 ChildList* init_child_list() {
-    ChildList* childList = malloc(sizeof(ChildList*));
+    ChildList* childList = malloc(sizeof(ChildList));
     childList->numChildren = 0;
-    Child** children = malloc(sizeof(Child*));
+    Child** children = malloc(sizeof(Child));
     childList->children = children;
     return childList;
 }
