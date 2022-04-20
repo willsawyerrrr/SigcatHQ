@@ -17,16 +17,13 @@
 int main() {
     ignore_interrupt();
 
-    ChildList* childList = malloc(sizeof(ChildList*));
-    childList->numChildren = 0;
-    Child** children = malloc(sizeof(Child*));
-    childList->children = children;
+    ChildList* childList = init_child_list();
 
     char* input;
     printf("> ");
     fflush(stdout);
     input = read_line(stdin);
-    while (input) { // while input != NULL
+    while (input) { // haven't received EOF
         if (strcmp(input, "")) { // if input is non-empty
             parse(input, childList);
         }
@@ -36,10 +33,7 @@ int main() {
         input = read_line(stdin);
     }
 
-    for (int i = 0; childList->children[i]; i++) {
-        free(childList->children[i]);
-    }
-    free(childList);
+    free_child_list(childList);
      
     return 0;
 }
@@ -106,6 +100,8 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         Child* child = malloc(sizeof(Child*));
         child->processId = childId;
         child->jobId = childList->numChildren;
+        child->programName= malloc(sizeof(char));
+        strcpy(child->programName, args[1]);
         child->pToC = pToC[1];
         child->cToP = cToP[0];
         
@@ -120,6 +116,9 @@ void spawn(int numArgs, char** args, ChildList* childList) {
     } else { // child
         close(pToC[1]); // close parent to child write end
         close(cToP[0]); // close child to parent read end
+
+        dup2(pToC[0], STDIN_FILENO);
+        dup2(cToP[1], STDOUT_FILENO);
         
         if (execvp(args[1], args) == -1) {
             exit(99);
@@ -132,6 +131,14 @@ int validate_spawn_args(int numArgs, char** args, ChildList* childList) {
 }
 
 void report(int numArgs, char** args, ChildList* childList) {
+    Child** children = childList->children;
+    Child* child;
+    printf("[Job] cmd:status\n");
+    for (int i = 0; children[i]; i++) {
+        child = children[i];
+        printf("[%d] %s:%s\n", child->jobId, child->programName, "status");
+    }
+    fflush(stdout);
 }
 
 int validate_report_args(int numArgs, char** args, ChildList* childList) {
@@ -226,11 +233,8 @@ int validate_num_args(int minExpected, int given) {
 }
 
 int validate_job_id(int jobId, ChildList* childList) {
-    Child** children = childList->children;
-    for (int i = 0; children[i]; i++) {
-        if (children[i]->jobId == jobId) {
-            return 1;
-        }
+    if (get_child_by_job_id(jobId, childList)) {
+        return 1;
     }
     printf("Error: Invalid job\n");
     return 0;
@@ -240,7 +244,7 @@ int validate_numerical_arg(char* arg) {
     return 0; // no args are numerical
 }
 
-Child* get_child_by_jobid(ChildList* childList, int jobId) {
+Child* get_child_by_job_id(int jobId, ChildList* childList) {
     Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
         if (children[i]->jobId == jobId) {
@@ -249,5 +253,21 @@ Child* get_child_by_jobid(ChildList* childList, int jobId) {
     }
 
     return NULL;
+}
+
+ChildList* init_child_list() {
+    ChildList* childList = malloc(sizeof(ChildList*));
+    childList->numChildren = 0;
+    Child** children = malloc(sizeof(Child*));
+    childList->children = children;
+    return childList;
+}
+
+
+void free_child_list(ChildList* childList) {
+    for (int i = 0; childList->children[i]; i++) {
+        free(childList->children[i]);
+    }
+    free(childList);
 }
 

@@ -9,6 +9,8 @@ typedef struct {
     int processId;
     /* Job ID of the newly created child, relative to hq. */
     int jobId;
+    /* Name of the program running within the child process. */
+    char* programName;
     /* File descriptor for the pipe used to write from the parent (hq) to this
      * child process. */
     int pToC;
@@ -224,6 +226,17 @@ int validate_job_id(int jobId, ChildList* childList);
  *
  * If no child has the given job ID, NULL is returned.
  */
-Child* get_child_by_jobid(ChildList* childList, int jobId);
+Child* get_child_by_job_id(int jobId, ChildList* childList);
+
+/**
+ * Returns a malloc()'d pointer to an empty child list with count
+ * numChildren = 0.
+ *
+ * The caller of this function is responsible for freeing the memory allocated
+ * for the child list and all its children.
+ */
+ChildList* init_child_list();
+
+void free_child_list(ChildList* childList);
 
 #endif
