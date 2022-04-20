@@ -1,6 +1,8 @@
 #ifndef HQ_H
 #define HQ_H
 
+#include <sys/types.h>
+
 /*
  * Structure type to hold a child process - created within spawn.
  */
@@ -8,14 +10,14 @@ typedef struct {
     /* Process ID of the newly created child, relative to the kernel. */
     int processId;
     /* Job ID of the newly created child, relative to hq. */
-    int jobId;
+    pid_t jobId;
     /* Name of the program running within the child process. */
     char* programName;
-    /* File descriptor for the pipe used to write from the parent (hq) to this
-     * child process. */
+    /* File descriptor for the pipe used to write from the parent (this hq
+     * process) to this child process. */
     int pToC;
     /* File descriptor for the pipe used to read from this child within its
-     * parent (hq).
+     * parent (this hq process).
      */
     int cToP;
 } Child;

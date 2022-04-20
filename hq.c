@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define EOF_MIN_EXP_ARGS 2
@@ -91,7 +93,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
     int cToP[2];
     pipe(cToP); // child to parent
 
-    int childId = fork();
+    pid_t childId = fork();
     if (childId) { // parent
         close(pToC[0]); // close parent to child read end
         close(cToP[1]); // close child to parent write end
@@ -111,7 +113,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         childList->children[childList->numChildren] = child;
         childList->numChildren++;
 
-        printf("New Job ID [%d] created\n", childId);
+        printf("New Job ID [%d] created\n", child->jobId);
         fflush(stdout);
     } else { // child
         close(pToC[1]); // close parent to child write end
@@ -133,12 +135,26 @@ int validate_spawn_args(int numArgs, char** args, ChildList* childList) {
 void report(int numArgs, char** args, ChildList* childList) {
     Child** children = childList->children;
     Child* child;
+    int statusCode = 0;
+    char* status = malloc(sizeof(char));
+
     printf("[Job] cmd:status\n");
     for (int i = 0; children[i]; i++) {
         child = children[i];
-        printf("[%d] %s:%s\n", child->jobId, child->programName, "status");
+        if (waitpid(child->processId, &statusCode, WNOHANG) != -1) {
+            if (WIFEXITED(statusCode)) {
+                sprintf(status, "exited(%d)", WEXITSTATUS(statusCode));
+            } else if (WIFSIGNALED(statusCode)) {
+                sprintf(status, "signalled(%d)", WTERMSIG(statusCode));
+            } else {
+                strcpy(status, "running");
+            }
+        }
+        printf("[%d] %s:%s\n", child->jobId, child->programName, status);
     }
+    
     fflush(stdout);
+    free(status);
 }
 
 int validate_report_args(int numArgs, char** args, ChildList* childList) {
