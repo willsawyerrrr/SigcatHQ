@@ -35,6 +35,7 @@ int main() {
         input = read_line(stdin);
     }
 
+    cleanup(childList);
     free_child_list(childList);
      
     return 0;
@@ -139,7 +140,7 @@ void report(int numArgs, char** args, ChildList* childList) {
     Child** children = childList->children;
     printf("[Job] cmd:status\n");
     if (numArgs > 1) {
-        Child* child = get_child_by_job_id(atoi(args[1]), childList);
+        Child* child = get_child_by_jobid(atoi(args[1]), childList);
         report_single(child);
     } else {
         for (int i = 0; children[i]; i++) {
@@ -160,16 +161,22 @@ void report_single(Child* child) {
         } else {
             strcpy(status, "running");
         }
+        printf("[%d] %s:%s\n", child->jobId, child->programName, status);
     }
 
-    printf("[%d] %s:%s\n", child->jobId, child->programName, status);
     fflush(stdout);
     free(status);
 }
 
 int validate_report_args(int numArgs, char** args, ChildList* childList) {
-    // valid if no job ID argument is given or if it is a valid number
-    return (numArgs == 1 || validate_numerical_arg(args[1]));
+    if (numArgs == 1) {
+        return 1;
+    }
+    if (!validate_numerical_arg(arg[1])) {
+        return 0;
+    }
+    int jobId = atoi(args[1]);
+    return validate_jobid(jobId, childList);
 }
 
 void send_signal(int numArgs, char** args, ChildList* childList) {
@@ -179,12 +186,14 @@ void send_signal(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_signal_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)
+            || !validate_numerical_arg(args[1])
+            || !validate_numerical_arg(args[2])) {
         return 0;
     }
-
-    // check args
-    return 0;
+    int jobId = atoi(args[1]);
+    int signum = atoi(args[2]);
+    return (validate_jobid(jobId) && validate_signum(signum));
 }
 
 void sleep_hq(int numArgs, char** args, ChildList* childList) {
@@ -194,12 +203,8 @@ void sleep_hq(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_sleep_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
-        return 0;
-    }
-
-    // check args
-    return 0;
+    return (validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)
+            && validate_numerical_arg(args[1]));
 }
 
 void send(int numArgs, char** args, ChildList* childList) {
@@ -209,12 +214,12 @@ void send(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_send_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(SEND_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_num_args(SEND_MIN_EXP_ARGS, numArgs)
+            || !validate_numerical_arg(args[1])) {
         return 0;
     }
-
-    // check args
-    return 0;
+    int jobId = atoi(args[1]);
+    return validate_jobid(jobId, childList);
 }
 
 void rcv(int numArgs, char** args, ChildList* childList) {
@@ -224,12 +229,12 @@ void rcv(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_rcv_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(RCV_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_num_args(RCV_MIN_EXP_ARGS, numArgs)
+            || !validate_numerical_arg(args[1])) {
         return 0;
     }
-
-    // check args
-    return 0;
+    int jobId = atoi(args[1]);
+    return validate_jobid(jobId, childList);
 }
 
 void eof(int numArgs, char** args, ChildList* childList) {
@@ -239,15 +244,19 @@ void eof(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_eof_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(EOF_MIN_EXP_ARGS, numArgs)) {
+    if (!validate_num_args(EOF_MIN_EXP_ARGS, numArgs)
+            || !validate_numerical_arg(args[1])) {
         return 0;
     }
-
-    // check args
-    return 0;
+    int jobId = atoi(args[1]);
+    return validate_jobid(jobId, childList);
 }
 
-void cleanup() {
+void cleanup(ChildList* childList) {
+    Child** children = childList->children;
+    for (int i = 0; children[i]; i++) {
+        // send signal -9 to each child
+    }
 }
 
 int validate_num_args(int minExpected, int given) {
@@ -255,14 +264,7 @@ int validate_num_args(int minExpected, int given) {
         return 1;
     }
     printf("Error: insufficient arguments\n");
-    return 0;
-}
-
-int validate_job_id(int jobId, ChildList* childList) {
-    if (get_child_by_job_id(jobId, childList)) {
-        return 1;
-    }
-    printf("Error: Invalid job\n");
+    fflush(stdout);
     return 0;
 }
 
@@ -270,7 +272,25 @@ int validate_numerical_arg(char* arg) {
     return 0; // no args are numerical
 }
 
-Child* get_child_by_job_id(int jobId, ChildList* childList) {
+int validate_jobid(int jobId, ChildList* childList){
+    if (get_child_by_jobid(jobId, childList)) {
+        return 1;
+    }
+    printf("Error: Invalid job\n");
+    fflush(stdout);
+    return 0;
+}
+
+int validate_signum(int signum) {
+    if (signum >= 1 && signum <= 31) {
+        return 1;
+    }
+    printf("Error: Invalid signal\n");
+    fflush(stdout);
+    return 0;
+}
+
+Child* get_child_by_jobid(int jobId, ChildList* childList) {
     Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
         if (children[i]->jobId == jobId) {

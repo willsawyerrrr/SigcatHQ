@@ -218,23 +218,41 @@ void cleanup();
 int validate_num_args(int minExpected, int given);
 
 /*
- * Determines whether the given job ID is valid.
+ * Determines whether the given argument represents a complete and valid
+ * number. This number could be integral or fractional.
  *
- * Returns 1 (true) if and only if jobId is the id of a child of this process;
- * 0 (false) otherwise.
+ * Returns 1 (true) if and only if arg is a valid and complete numerical
+ * argument; 0 otherwise.
  */
-int validate_job_id(int jobId, ChildList* childList);
-
 int validate_numerical_arg(char* arg);
 
-/**
+/*
+ * Determines whether the given integer is a valid job ID. A valid job ID is
+ * one which corresponds to a child in the given ChildList, created using the
+ * spawn command.
+ *
+ * Returns 1 (true) if and only if arg represents the job ID of a child of this
+ * process; 0 (false) otherwise.
+ */
+int validate_jobid(int jobId, ChildList* childList);
+
+
+/*
+ * Determines whether the given integer is a valid signal number. A signal
+ * number is valid if and only if it is between 1 and 31, inclusive.
+ *
+ * Returns 1 (true) if and only if arg is a valid signal number; 0 otherwise.
+ */
+int validate_signum(int signum);
+
+/*
  * Returns the child process specified by the given job ID.
  *
  * If no child has the given job ID, NULL is returned.
  */
-Child* get_child_by_job_id(int jobId, ChildList* childList);
+Child* get_child_by_jobid(int jobId, ChildList* childList);
 
-/**
+/*
  * Returns a malloc()'d pointer to an empty child list with count
  * numChildren = 0.
  *
@@ -243,6 +261,9 @@ Child* get_child_by_job_id(int jobId, ChildList* childList);
  */
 ChildList* init_child_list();
 
+/*
+ * Frees the given ChildList and all of its children.
+ */
 void free_child_list(ChildList* childList);
 
 #endif
