@@ -277,6 +277,10 @@ void eof(int numArgs, char** args, ChildList* childList) {
     if (!validate_eof_args(numArgs, args, childList)) {
         return;
     }
+
+    int jobId = atoi(args[1]);
+    Child* child = get_child_by_jobid(jobId, childList);
+    close(child->pToC);
 }
 
 int validate_eof_args(int numArgs, char** args, ChildList* childList) {
