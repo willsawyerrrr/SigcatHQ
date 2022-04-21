@@ -170,14 +170,11 @@ void report_single(Child* child) {
 }
 
 int validate_report_args(int numArgs, char** args, ChildList* childList) {
-    if (numArgs == 1) {
-        return 1;
-    } else if (!validate_numerical_arg(args[1])
-            || !validate_jobid(atoi(args[1]), childList)) {
-        return 0;
-    }
-
-    return 1;
+    return (
+            numArgs == 1
+            || (validate_numerical_arg(args[1])
+                && validate_jobid(atoi(args[1]), childList))
+           );
 }
 
 void send_signal(int numArgs, char** args, ChildList* childList) {
@@ -187,15 +184,13 @@ void send_signal(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_signal_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)
-            || !validate_numerical_arg(args[1])
-            || !validate_jobid(atoi(args[1]), childList)
-            || !validate_numerical_arg(args[2])
-            || !validate_signum(atoi(args[2]))) {
-        return 0;
-    }
-
-    return 1;
+    return (
+            validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)
+            && validate_numerical_arg(args[1])
+            && validate_jobid(atoi(args[1]), childList)
+            && validate_numerical_arg(args[2])
+            && validate_signum(atoi(args[2]))
+           );
 }
 
 void sleep_hq(int numArgs, char** args, ChildList* childList) {
@@ -228,13 +223,11 @@ void send(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_send_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(SEND_MIN_EXP_ARGS, numArgs)
-            || !validate_numerical_arg(args[1])
-            || !validate_jobid(atoi(args[1]), childList)) {
-        return 0;
-    }
-
-    return 1;
+    return (
+            validate_num_args(SEND_MIN_EXP_ARGS, numArgs)
+            && validate_numerical_arg(args[1])
+            && validate_jobid(atoi(args[1]), childList)
+           );
 }
 
 void rcv(int numArgs, char** args, ChildList* childList) {
@@ -264,13 +257,10 @@ void rcv(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_rcv_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(RCV_MIN_EXP_ARGS, numArgs)
-            || !validate_numerical_arg(args[1])
-            || !validate_jobid(atoi(args[1]), childList)) {
-        return 0;
-    }
-
-    return 1;
+    return (validate_num_args(RCV_MIN_EXP_ARGS, numArgs)
+            && validate_numerical_arg(args[1])
+            && validate_jobid(atoi(args[1]), childList)
+           );
 }
 
 void eof(int numArgs, char** args, ChildList* childList) {
@@ -284,13 +274,10 @@ void eof(int numArgs, char** args, ChildList* childList) {
 }
 
 int validate_eof_args(int numArgs, char** args, ChildList* childList) {
-    if (!validate_num_args(EOF_MIN_EXP_ARGS, numArgs)
-            || !validate_numerical_arg(args[1])
-            || !validate_jobid(atoi(args[1]), childList)) {
-        return 0;
-    }
-
-    return 1;
+    return (validate_num_args(EOF_MIN_EXP_ARGS, numArgs)
+            && validate_numerical_arg(args[1])
+            && validate_jobid(atoi(args[1]), childList)
+           );
 }
 
 void cleanup(ChildList* childList) {
