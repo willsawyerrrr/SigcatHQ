@@ -124,7 +124,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         dup2(pToC[0], STDIN_FILENO);
         dup2(cToP[1], STDOUT_FILENO);
         
-        if (execvp(args[1], args) == -1) {
+        if (execvpe(args[1], args, getenv("PATH")) == -1) {
             exit(99);
         }
     }
@@ -242,15 +242,14 @@ void rcv(int numArgs, char** args, ChildList* childList) {
     char* readBuffer = malloc(sizeof(char));
     if (!is_ready(cToP)) {
         printf("<no input>");
-    }
-
-    if (!read(child->cToP, readBuffer, 1)) {
+    } else if (!read(child->cToP, readBuffer, 1)) {
         printf("<EOF>");
     } else {
         do {
             printf("%s", readBuffer);
         } while (read(child->cToP, readBuffer, 1));
     }
+
     free(readBuffer);
     printf("\n");
     fflush(stdout);
