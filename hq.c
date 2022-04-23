@@ -17,7 +17,7 @@
 #define SPAWN_MIN_EXP_ARGS 2
 
 int main() {
-    ignore_interrupt();
+    ignore_signals();
 
     ChildList* childList = init_child_list();
 
@@ -76,12 +76,13 @@ void parse(char* command, ChildList* childList) {
     free(args);
 }
 
-void ignore_interrupt() {
+void ignore_signals() {
     struct sigaction ignore;
     memset(&ignore, 0, sizeof(ignore));
     ignore.sa_handler = SIG_IGN;
     ignore.sa_flags = SA_RESTART;
     sigaction(SIGINT, &ignore, 0);
+    sigaction(SIGPIPE, &ignore, 0);
 }
 
 void spawn(int numArgs, char** args, ChildList* childList) {

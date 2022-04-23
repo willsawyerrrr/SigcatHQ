@@ -35,9 +35,9 @@ typedef struct {
 } ChildList;
 
 /*
- * Sets a handler to ignore the interrupt signal.
+ * Sets a handler to ignore the interrupt and broken pipe signals.
  */
-void ignore_interrupt();
+void ignore_signals();
 
 /*
  * Parses the given command string. If the first argument of the command string
