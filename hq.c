@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include "hq.h"
 
 #include <csse2310a3.h>
@@ -126,7 +124,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         dup2(pToC[0], STDIN_FILENO);
         dup2(cToP[1], STDOUT_FILENO);
         
-        execvp(args[1], args);
+        execvp(args[1], args + 1);
 
         // this point is only reached if the above exec() call failed
         exit(99);
@@ -244,18 +242,25 @@ void rcv(int numArgs, char** args, ChildList* childList) {
     int cToP = child->cToP;
 
     char* readBuffer = malloc(sizeof(char));
+    char* writeBuffer = malloc(sizeof(char));
     if (!is_ready(cToP)) {
         printf("<no input>");
     } else if (!read(child->cToP, readBuffer, 1)) {
         printf("<EOF>");
     } else {
-        do {
-            printf("%s", readBuffer);
-        } while (read(child->cToP, readBuffer, 1));
+        // The above condition already calls read(), so readBuffer is already
+        // populated. Hence, it is reasonable to check and use the value stored
+        // in readBuffer before it is populated within the following loop.
+        // Also, the condition is checked immediately after the call to read().
+        while (!strcmp(readBuffer, "\n")) {
+            writeBuffer = realloc(writeBuffer, strlen(writeBuffer) + 2);
+            strcat(writeBuffer, readBuffer);
+            read(child->cToP, readBuffer, 1);
+        }
     }
 
     free(readBuffer);
-    printf("\n");
+    printf("%s\n", writeBuffer);
     fflush(stdout);
 }
 
