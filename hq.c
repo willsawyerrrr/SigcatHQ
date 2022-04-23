@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "hq.h"
 
 #include <csse2310a3.h>
@@ -124,9 +126,10 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         dup2(pToC[0], STDIN_FILENO);
         dup2(cToP[1], STDOUT_FILENO);
         
-        if (execvpe(args[1], args, getenv("PATH")) == -1) {
-            exit(99);
-        }
+        execvp(args[1], args);
+
+        // this point is only reached if the above exec() call failed
+        exit(99);
     }
 }
 
@@ -220,6 +223,7 @@ void send(int numArgs, char** args, ChildList* childList) {
     int jobId = atoi(args[1]);
     Child* child = get_child_by_jobid(jobId, childList);
     write(child->pToC, args[2], strlen(args[2]) + 1);
+    write(child->pToC, "\n", 2);
 }
 
 int validate_send_args(int numArgs, char** args, ChildList* childList) {
