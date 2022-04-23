@@ -8,11 +8,13 @@
  */
 typedef struct {
     /* Process ID of the newly created child, relative to the kernel. */
-    int processId;
+    pid_t processId;
     /* Job ID of the newly created child, relative to hq. */
     pid_t jobId;
     /* Name of the program running within the child process. */
     char* programName;
+    /* Status of the child process, as used within the report command.  */
+    char* status;
     /* File descriptor for the pipe used to write from the parent (this hq
      * process) to this child process. */
     int pToC;

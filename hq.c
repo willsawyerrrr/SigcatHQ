@@ -104,8 +104,10 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         Child* child = malloc(sizeof(Child));
         child->processId = childId;
         child->jobId = childList->numChildren;
-        child->programName= malloc(sizeof(char));
+        child->programName = malloc(sizeof(char));
         strcpy(child->programName, args[1]);
+        child->status = malloc(sizeof(char));
+        strcpy(child->status, "running");
         child->pToC = pToC[1];
         child->cToP = cToP[0];
         
@@ -124,7 +126,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         dup2(pToC[0], STDIN_FILENO);
         dup2(cToP[1], STDOUT_FILENO);
         
-        execvp(args[1], args + 1);
+        execvp(args[1], &args[1]);
 
         // this point is only reached if the above exec() call failed
         exit(99);
@@ -153,9 +155,13 @@ void report(int numArgs, char** args, ChildList* childList) {
 
 void report_single(Child* child) {
     int statusCode = 0;
-    char* status = malloc(sizeof(char));
+    char* status = child->status;
     
-    if (waitpid(child->processId, &statusCode, WNOHANG) != -1) {
+    // Only write to child's status string if the last status was running;
+    // otherwise, the last assigned status was exited or signalled, both of
+    // which cannot change. Hence, the previous status is reused.
+    if (!strcmp(status, "running")
+            && waitpid(child->processId, &statusCode, WNOHANG)) {
         if (WIFEXITED(statusCode)) { // statusCode => exited
             sprintf(status, "exited(%d)", WEXITSTATUS(statusCode));
         } else if (WIFSIGNALED(statusCode)) { // statusCode => was sent signal
@@ -163,11 +169,10 @@ void report_single(Child* child) {
         } else {
             strcpy(status, "running");
         }
-        printf("[%d] %s:%s\n", child->jobId, child->programName, status);
-        fflush(stdout);
     }
 
-    free(status);
+    printf("[%d] %s:%s\n", child->jobId, child->programName, status);
+    fflush(stdout);
 }
 
 int validate_report_args(int numArgs, char** args, ChildList* childList) {
@@ -182,6 +187,11 @@ void send_signal(int numArgs, char** args, ChildList* childList) {
     if (!validate_signal_args(numArgs, args, childList)) {
         return;
     }
+
+    Child* child = get_child_by_jobid(atoi(args[1]), childList);
+    int signum = atoi(args[2]);
+
+    kill(child->processId, signum);
 }
 
 int validate_signal_args(int numArgs, char** args, ChildList* childList) {
@@ -252,15 +262,16 @@ void rcv(int numArgs, char** args, ChildList* childList) {
         // populated. Hence, it is reasonable to check and use the value stored
         // in readBuffer before it is populated within the following loop.
         // Also, the condition is checked immediately after the call to read().
-        while (!strcmp(readBuffer, "\n")) {
+        while (strcmp(readBuffer, "\n")) {
             writeBuffer = realloc(writeBuffer, strlen(writeBuffer) + 2);
             strcat(writeBuffer, readBuffer);
             read(child->cToP, readBuffer, 1);
         }
     }
 
-    free(readBuffer);
     printf("%s\n", writeBuffer);
+    free(readBuffer);
+    free(writeBuffer);
     fflush(stdout);
 }
 
@@ -291,7 +302,9 @@ int validate_eof_args(int numArgs, char** args, ChildList* childList) {
 void cleanup(ChildList* childList) {
     Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
-        // send signal -9 to each child
+        pid_t processId = children[i]->processId;
+        kill(processId, 9);
+        waitpid(processId, NULL, 0);
     }
 }
 
@@ -351,8 +364,10 @@ ChildList* init_child_list() {
 void free_child_list(ChildList* childList) {
     Child** children = childList-> children;
     for (int i = 0; children[i]; i++) {
-        free(children[i]->programName);
-        free(children[i]);
+        Child* child = children[i];
+        free(child->programName);
+        free(child->status);
+        free(child);
     }
     free(childList);
 }
