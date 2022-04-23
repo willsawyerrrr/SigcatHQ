@@ -209,6 +209,8 @@ void sleep_hq(int numArgs, char** args, ChildList* childList) {
     if (!validate_sleep_args(numArgs, args, childList)) {
         return;
     }
+
+    sleep(atoi(args[1]));
 }
 
 int validate_sleep_args(int numArgs, char** args, ChildList* childList) {
