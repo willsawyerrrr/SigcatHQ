@@ -22,6 +22,7 @@ int main() {
             break;
         }
         fprintf(outputStream, "%s\n", input);
+        fflush(outputStream);
         free(input);
     } while (!feof(stdin));
 
