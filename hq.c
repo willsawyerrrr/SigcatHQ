@@ -180,8 +180,8 @@ int validate_report_args(int numArgs, char** args, ChildList* childList) {
     return (
             numArgs == 1
             || (validate_numerical_arg(args[1])
-                && validate_jobid(atoi(args[1]), childList))
-           );
+            && validate_jobid(atoi(args[1]), childList))
+            );
 }
 
 void send_signal(int numArgs, char** args, ChildList* childList) {
@@ -202,7 +202,7 @@ int validate_signal_args(int numArgs, char** args, ChildList* childList) {
             && validate_jobid(atoi(args[1]), childList)
             && validate_numerical_arg(args[2])
             && validate_signum(atoi(args[2]))
-           );
+            );
 }
 
 void sleep_hq(int numArgs, char** args, ChildList* childList) {
@@ -210,7 +210,7 @@ void sleep_hq(int numArgs, char** args, ChildList* childList) {
         return;
     }
 
-    sleep(atoi(args[1]));
+    sleep(strtod(args[1], NULL));
 }
 
 int validate_sleep_args(int numArgs, char** args, ChildList* childList) {
@@ -242,7 +242,7 @@ int validate_send_args(int numArgs, char** args, ChildList* childList) {
             validate_num_args(SEND_MIN_EXP_ARGS, numArgs)
             && validate_numerical_arg(args[1])
             && validate_jobid(atoi(args[1]), childList)
-           );
+            );
 }
 
 void rcv(int numArgs, char** args, ChildList* childList) {
@@ -282,7 +282,7 @@ int validate_rcv_args(int numArgs, char** args, ChildList* childList) {
     return (validate_num_args(RCV_MIN_EXP_ARGS, numArgs)
             && validate_numerical_arg(args[1])
             && validate_jobid(atoi(args[1]), childList)
-           );
+            );
 }
 
 void eof(int numArgs, char** args, ChildList* childList) {
@@ -299,7 +299,7 @@ int validate_eof_args(int numArgs, char** args, ChildList* childList) {
     return (validate_num_args(EOF_MIN_EXP_ARGS, numArgs)
             && validate_numerical_arg(args[1])
             && validate_jobid(atoi(args[1]), childList)
-           );
+            );
 }
 
 void cleanup(ChildList* childList) {
@@ -315,7 +315,7 @@ int validate_num_args(int minExpected, int given) {
     if (given >= minExpected) {
         return 1;
     }
-    printf("Error: insufficient arguments\n");
+    printf("Error: Insufficient arguments\n");
     fflush(stdout);
     return 0;
 }
@@ -363,9 +363,8 @@ ChildList* init_child_list() {
     return childList;
 }
 
-
 void free_child_list(ChildList* childList) {
-    Child** children = childList-> children;
+    Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
         Child* child = children[i];
         free(child->programName);

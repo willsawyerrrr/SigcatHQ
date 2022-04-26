@@ -77,6 +77,16 @@ int validate_spawn_args(int numArgs, char** args, ChildList* childList);
  */
 void report(int numArgs, char** args, ChildList* childList);
 
+/*
+ * Reports on the given child process's status. The format of the resultant
+ * string is:
+ *      [Job] cmd:status
+ * Where Job is the jobId of the process, cmd is the name of the program the
+ * process is executing and status is the status of the process and is either:
+ *      running             ;
+ *      exited(code)        , where code is the exit code; or
+ *      signalled(signum)   , where signum is the signal number.
+ */
 void report_single(Child* child);
 
 /*
@@ -237,7 +247,6 @@ int validate_numerical_arg(char* arg);
  * process; 0 (false) otherwise.
  */
 int validate_jobid(int jobId, ChildList* childList);
-
 
 /*
  * Determines whether the given integer is a valid signal number. A signal

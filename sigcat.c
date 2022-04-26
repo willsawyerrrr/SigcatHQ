@@ -18,7 +18,6 @@ int main() {
     do {
         input = read_line(stdin);
         if (input == NULL) {
-            fprintf(outputStream, "\n");
             break;
         }
         fprintf(outputStream, "%s\n", input);
