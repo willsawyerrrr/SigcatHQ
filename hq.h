@@ -273,6 +273,16 @@ Child* get_child_by_jobid(int jobId, ChildList* childList);
 ChildList* init_child_list();
 
 /*
+ * Creates and returns a new Child struct with the given process ID, job ID,
+ * program name and pipe file descriptors and adds it to the given ChildList.
+ *
+ * The caller of this function is responsible for freeing the memory allocated
+ * for the child.
+ */
+Child* init_child(ChildList* childList, pid_t processId, char* programName,
+        int pToC, int cToP);
+
+/*
  * Frees the given ChildList and all of its children.
  */
 void free_child_list(ChildList* childList);

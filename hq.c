@@ -18,6 +18,10 @@
 #define SPAWN_MIN_EXP_ARGS 2
 
 #define EXIT_EXEC_FAIL 99
+ 
+// longest possible status is null-terminated "signalled(XX)" (14 characters)
+#define MAX_STATUS_BUFFER_SIZE 14
+
 #define PIPE_WRITE_END 1
 #define PIPE_READ_END 0
 
@@ -106,23 +110,9 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         close(pToC[PIPE_READ_END]); // close parent to child read end
         close(cToP[PIPE_WRITE_END]); // close child to parent write end
 
-        // create new child struct
-        Child* child = malloc(sizeof(Child));
-        child->processId = childId;
-        child->jobId = childList->numChildren;
-        child->programName = malloc(sizeof(char));
-        strcpy(child->programName, args[1]);
-        child->status = malloc(sizeof(char));
-        strcpy(child->status, "running");
-        child->pToC = pToC[PIPE_WRITE_END];
-        child->cToP = cToP[PIPE_READ_END];
+        Child* child = init_child(childList, childId, args[1],
+                pToC[PIPE_READ_END], cToP[PIPE_WRITE_END]);
         
-        // add the child to the list
-        childList->children = realloc(childList->children,
-                sizeof(Child) * (childList->numChildren + 1));
-        childList->children[childList->numChildren] = child;
-        childList->numChildren++;
-
         printf("New Job ID [%d] created\n", child->jobId);
         fflush(stdout);
     } else { // child
@@ -367,6 +357,27 @@ ChildList* init_child_list() {
     Child** children = malloc(sizeof(Child));
     childList->children = children;
     return childList;
+}
+
+Child* init_child(ChildList* childList, pid_t processId, char* programName,
+        int pToC, int cToP) {
+    // create child
+    Child* child = malloc(sizeof(Child));
+    child->processId = processId;
+    child->jobId = childList->numChildren;
+    child->programName = malloc(strlen(programName) + 1);
+    strcpy(child->programName, programName);
+    child->status = malloc(MAX_STATUS_BUFFER_SIZE);
+    strcpy(child->status, "running");
+    child->pToC = pToC;
+    child->cToP = cToP;
+        
+    // add the child to the list
+    childList->children = realloc(childList->children,
+            sizeof(Child) * (++(childList->numChildren)));
+    childList->children[childList->numChildren - 1] = child;
+
+    return child;
 }
 
 void free_child_list(ChildList* childList) {
