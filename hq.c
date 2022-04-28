@@ -375,6 +375,7 @@ void free_child_list(ChildList* childList) {
         free(child->status);
         free(child);
     }
+    free(children);
     free(childList);
 }
 
