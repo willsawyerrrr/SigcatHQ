@@ -207,7 +207,7 @@ int validate_sleep_args(int numArgs, char** args, ChildList* childList) {
         return 0;
     } else if (!validate_numerical_arg(args[1], 1)
             || (strtod(args[1], NULL) < 0)) {
-        printf("Error: Invalid sleep time\b");
+        printf("Error: Invalid sleep time\n");
         fflush(stdout);
         return 0;
     }
