@@ -10,7 +10,7 @@ EXECS = sigcat hq		# EXECutable fileS
 .PHONY = all tidy clean
 .DEFAULT_GOAL := all
 
-all: clean sigcat hq tidy
+all: sigcat hq tidy
 
 ${EXECS}: %: %.o
 
@@ -20,4 +20,4 @@ tidy:
 	@rm -f ${PCHS} ${OBJS}
 
 clean:
-	@rm -f ${PCHS} ${OBJS} ${EXECS}
+	@rm -rf ${PCHS} ${OBJS} ${EXECS} testfiles
