@@ -1,10 +1,30 @@
-all: sigcat hq
+CC = gcc
+CFLAGS = -Wall -pedantic -std=gnu99
+LDFLAGS = -L/local/courses/csse2310/lib
+LDLIBS = -lcsse2310a3
+CINCLUDE = -I/local/courses/csse2310/include
 
-sigcat:
-	@gcc sigcat.c sigcat.h -pedantic -Wall -std=gnu99 -L/local/courses/csse2310/lib -lcsse2310a3 -I/local/courses/csse2310/include -o sigcat
+PCHFS = sigcat.h.gch hq.h.gch	# PreCompiled Header FileS
+OBJS = sigcat.o hq.o		# OBJect fileS
+EXECS = sigcat hq		# EXECutable fileS
 
-hq:
-	@gcc hq.c hq.h -pedantic -Wall -std=gnu99 -L/local/courses/csse2310/lib -lcsse2310a3 -I/local/courses/csse2310/include -o hq
+.PHONY = all sigcat.o ${OBJS} tidy clean
+.DEFAULT_GOAL := all
 
-cleanup:
-	@rm sigcat hq
+all: clean build
+
+build: sigcat hq tidy
+
+# to make each executable, link object files of the same name
+${EXECS}: %: %.o
+	@${CC} ${CFLAGS} ${LDFLAGS} ${LDLIBS} ${CINCLUDE} $^ -o $@
+
+# to make each object file, compile source and header files of the same name
+${OBJS}: %.o: %.c %.h
+	@${CC} ${CFLAGS} ${LDFLAGS} ${LDLIBS} ${CINCLUDE} $^ -c
+
+tidy:
+	@rm -rf ${PCHFS} ${OBJS}
+
+clean:
+	@rm -f ${EXECS}
