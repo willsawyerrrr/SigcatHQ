@@ -172,11 +172,7 @@ void report_single(Child* child) {
 }
 
 int validate_report_args(int numArgs, char** args, ChildList* childList) {
-    return (
-            numArgs == 1
-            || (validate_numerical_arg(args[1])
-            && validate_jobid(args[1], childList))
-            );
+    return (numArgs == 1 || validate_jobid(args[1], childList));
 }
 
 void send_signal(int numArgs, char** args, ChildList* childList) {
@@ -193,9 +189,7 @@ void send_signal(int numArgs, char** args, ChildList* childList) {
 int validate_signal_args(int numArgs, char** args, ChildList* childList) {
     return (
             validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)
-            && validate_numerical_arg(args[1])
             && validate_jobid(args[1], childList)
-            && validate_numerical_arg(args[2])
             && validate_signum(args[2])
             );
 }
@@ -211,7 +205,7 @@ void sleep_hq(int numArgs, char** args, ChildList* childList) {
 int validate_sleep_args(int numArgs, char** args, ChildList* childList) {
     if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
         return 0;
-    } else if (!validate_numerical_arg(args[1])
+    } else if (!validate_numerical_arg(args[1], 1)
             || (strtod(args[1], NULL) < 0)) {
         printf("Error: Invalid sleep time\b");
         fflush(stdout);
@@ -235,7 +229,6 @@ void send(int numArgs, char** args, ChildList* childList) {
 int validate_send_args(int numArgs, char** args, ChildList* childList) {
     return (
             validate_num_args(SEND_MIN_EXP_ARGS, numArgs)
-            && validate_numerical_arg(args[1])
             && validate_jobid(args[1], childList)
             );
 }
@@ -275,7 +268,6 @@ void rcv(int numArgs, char** args, ChildList* childList) {
 
 int validate_rcv_args(int numArgs, char** args, ChildList* childList) {
     return (validate_num_args(RCV_MIN_EXP_ARGS, numArgs)
-            && validate_numerical_arg(args[1])
             && validate_jobid(args[1], childList)
             );
 }
@@ -292,7 +284,6 @@ void eof(int numArgs, char** args, ChildList* childList) {
 
 int validate_eof_args(int numArgs, char** args, ChildList* childList) {
     return (validate_num_args(EOF_MIN_EXP_ARGS, numArgs)
-            && validate_numerical_arg(args[1])
             && validate_jobid(args[1], childList)
             );
 }
@@ -315,14 +306,21 @@ int validate_num_args(int minExpected, int given) {
     return 0;
 }
 
-int validate_numerical_arg(char* arg) {
-    char** next = malloc(sizeof(char*));
-    strtod(arg, next);
-    return (**next == '\0');
+int validate_numerical_arg(char* arg, int allowFractional) {
+    for (int i = 0; arg[i]; i++) {
+        if (!isdigit(arg[i])
+                && (!allowFractional || arg[i] != '.')) {
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 int validate_jobid(char* jobId, ChildList* childList){
-    if (isdigit(jobId[0]) && get_child_by_jobid(atoi(jobId), childList)) {
+    if (validate_numerical_arg(jobId, 0)
+            && isdigit(jobId[0])
+            && get_child_by_jobid(atoi(jobId), childList)) {
         return 1;
     }
     printf("Error: Invalid job\n");
@@ -331,7 +329,8 @@ int validate_jobid(char* jobId, ChildList* childList){
 }
 
 int validate_signum(char* signum) {
-    if (isdigit(signum[0])
+    if (validate_numerical_arg(signum, 0)
+            && isdigit(signum[0])
             && atoi(signum) >= 1 && atoi(signum) <= 31) {
         return 1;
     }

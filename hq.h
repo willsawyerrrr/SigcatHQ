@@ -231,12 +231,13 @@ int validate_num_args(int minExpected, int given);
 
 /*
  * Determines whether the given argument represents a complete and valid
- * number. This number could be integral or fractional.
+ * number. If allowFractional is set, the given argument may represent a
+ * fractional number; otherwise, the argument must represent an integer.
  *
  * Returns 1 (true) if and only if arg is a valid and complete numerical
  * argument; 0 otherwise.
  */
-int validate_numerical_arg(char* arg);
+int validate_numerical_arg(char* arg, int allowFractional);
 
 /*
  * Determines whether the given integer is a valid job ID. A valid job ID is
