@@ -16,6 +16,10 @@
 #define SLEEP_MIN_EXP_ARGS 2
 #define SPAWN_MIN_EXP_ARGS 2
 
+#define EXIT_EXEC_FAIL 99
+#define PIPE_WRITE_END 1
+#define PIPE_READ_END 0
+
 int main() {
     ignore_signals();
 
@@ -38,7 +42,7 @@ int main() {
     cleanup(childList);
     free_child_list(childList);
      
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 void parse(char* command, ChildList* childList) {
@@ -98,8 +102,8 @@ void spawn(int numArgs, char** args, ChildList* childList) {
 
     pid_t childId = fork();
     if (childId) { // parent
-        close(pToC[0]); // close parent to child read end
-        close(cToP[1]); // close child to parent write end
+        close(pToC[PIPE_READ_END]); // close parent to child read end
+        close(cToP[PIPE_WRITE_END]); // close child to parent write end
 
         // create new child struct
         Child* child = malloc(sizeof(Child));
@@ -109,8 +113,8 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         strcpy(child->programName, args[1]);
         child->status = malloc(sizeof(char));
         strcpy(child->status, "running");
-        child->pToC = pToC[1];
-        child->cToP = cToP[0];
+        child->pToC = pToC[PIPE_WRITE_END];
+        child->cToP = cToP[PIPE_READ_END];
         
         // add the child to the list
         childList->children = realloc(childList->children,
@@ -121,16 +125,16 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         printf("New Job ID [%d] created\n", child->jobId);
         fflush(stdout);
     } else { // child
-        close(pToC[1]); // close parent to child write end
-        close(cToP[0]); // close child to parent read end
+        close(pToC[PIPE_WRITE_END]); // close parent to child write end
+        close(cToP[PIPE_READ_END]); // close child to parent read end
 
-        dup2(pToC[0], STDIN_FILENO);
-        dup2(cToP[1], STDOUT_FILENO);
+        dup2(pToC[PIPE_READ_END], STDIN_FILENO);
+        dup2(cToP[PIPE_WRITE_END], STDOUT_FILENO);
         
         execvp(args[1], &args[1]);
 
         // this point is only reached if the above exec() call failed
-        exit(99);
+        exit(EXIT_EXEC_FAIL);
     }
 }
 
@@ -155,7 +159,7 @@ void report(int numArgs, char** args, ChildList* childList) {
 }
 
 void report_single(Child* child) {
-    int statusCode = 0;
+    int statusCode;
     char* status = child->status;
     
     // Only write to child's status string if the last status was running;
@@ -258,7 +262,7 @@ void rcv(int numArgs, char** args, ChildList* childList) {
     char* writeBuffer = malloc(sizeof(char));
     if (!is_ready(cToP)) {
         printf("<no input>");
-    } else if (!read(child->cToP, readBuffer, 1)) {
+    } else if (!read(cToP, readBuffer, 1)) {
         printf("<EOF>");
     } else {
         // The above condition already calls read(), so readBuffer is already
@@ -306,7 +310,7 @@ void cleanup(ChildList* childList) {
     Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
         pid_t processId = children[i]->processId;
-        kill(processId, 9);
+        kill(processId, SIGKILL);
         waitpid(processId, NULL, 0);
     }
 }
