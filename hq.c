@@ -1,6 +1,7 @@
 #include "hq.h"
 
 #include <csse2310a3.h>
+#include <ctype.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -184,7 +185,7 @@ int validate_report_args(int numArgs, char** args, ChildList* childList) {
     return (
             numArgs == 1
             || (validate_numerical_arg(args[1])
-            && validate_jobid(atoi(args[1]), childList))
+            && validate_jobid(args[1], childList))
             );
 }
 
@@ -203,9 +204,9 @@ int validate_signal_args(int numArgs, char** args, ChildList* childList) {
     return (
             validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)
             && validate_numerical_arg(args[1])
-            && validate_jobid(atoi(args[1]), childList)
+            && validate_jobid(args[1], childList)
             && validate_numerical_arg(args[2])
-            && validate_signum(atoi(args[2]))
+            && validate_signum(args[2])
             );
 }
 
@@ -245,7 +246,7 @@ int validate_send_args(int numArgs, char** args, ChildList* childList) {
     return (
             validate_num_args(SEND_MIN_EXP_ARGS, numArgs)
             && validate_numerical_arg(args[1])
-            && validate_jobid(atoi(args[1]), childList)
+            && validate_jobid(args[1], childList)
             );
 }
 
@@ -285,7 +286,7 @@ void rcv(int numArgs, char** args, ChildList* childList) {
 int validate_rcv_args(int numArgs, char** args, ChildList* childList) {
     return (validate_num_args(RCV_MIN_EXP_ARGS, numArgs)
             && validate_numerical_arg(args[1])
-            && validate_jobid(atoi(args[1]), childList)
+            && validate_jobid(args[1], childList)
             );
 }
 
@@ -302,7 +303,7 @@ void eof(int numArgs, char** args, ChildList* childList) {
 int validate_eof_args(int numArgs, char** args, ChildList* childList) {
     return (validate_num_args(EOF_MIN_EXP_ARGS, numArgs)
             && validate_numerical_arg(args[1])
-            && validate_jobid(atoi(args[1]), childList)
+            && validate_jobid(args[1], childList)
             );
 }
 
@@ -327,11 +328,11 @@ int validate_num_args(int minExpected, int given) {
 int validate_numerical_arg(char* arg) {
     char** next = malloc(sizeof(char*));
     strtod(arg, next);
-    return **next == '\0';
+    return (**next == '\0');
 }
 
-int validate_jobid(int jobId, ChildList* childList){
-    if (get_child_by_jobid(jobId, childList)) {
+int validate_jobid(char* jobId, ChildList* childList){
+    if (isdigit(jobId[0]) && get_child_by_jobid(atoi(jobId), childList)) {
         return 1;
     }
     printf("Error: Invalid job\n");
@@ -339,8 +340,9 @@ int validate_jobid(int jobId, ChildList* childList){
     return 0;
 }
 
-int validate_signum(int signum) {
-    if (signum >= 1 && signum <= 31) {
+int validate_signum(char* signum) {
+    if (isdigit(signum[0])
+            && atoi(signum) >= 1 && atoi(signum) <= 31) {
         return 1;
     }
     printf("Error: Invalid signal\n");

@@ -246,7 +246,7 @@ int validate_numerical_arg(char* arg);
  * Returns 1 (true) if and only if arg represents the job ID of a child of this
  * process; 0 (false) otherwise.
  */
-int validate_jobid(int jobId, ChildList* childList);
+int validate_jobid(char* jobId, ChildList* childList);
 
 /*
  * Determines whether the given integer is a valid signal number. A signal
@@ -254,7 +254,7 @@ int validate_jobid(int jobId, ChildList* childList);
  *
  * Returns 1 (true) if and only if arg is a valid signal number; 0 otherwise.
  */
-int validate_signum(int signum);
+int validate_signum(char* signum);
 
 /*
  * Returns the child process specified by the given job ID.
