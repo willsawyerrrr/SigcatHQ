@@ -242,27 +242,20 @@ void rcv(int numArgs, char** args, ChildList* childList) {
     Child* child = get_child_by_jobid(jobId, childList);
     int cToP = child->cToP;
 
-    char* readBuffer = malloc(sizeof(char));
-    char* writeBuffer = malloc(sizeof(char));
     if (!is_ready(cToP)) {
-        printf("<no input>");
-    } else if (!read(cToP, readBuffer, 1)) {
-        printf("<EOF>");
-    } else {
-        // The above condition already calls read(), so readBuffer is already
-        // populated. Hence, it is reasonable to check and use the value stored
-        // in readBuffer before it is populated within the following loop.
-        // Also, the condition is checked immediately after the call to read().
-        while (strcmp(readBuffer, "\n")) {
-            writeBuffer = realloc(writeBuffer, strlen(writeBuffer) + 2);
-            strcat(writeBuffer, readBuffer);
-            read(child->cToP, readBuffer, 1);
-        }
+        printf("<no input>\n");
+        fflush(stdout);
+        return;
     }
 
-    printf("%s\n", writeBuffer);
-    free(readBuffer);
-    free(writeBuffer);
+    char* input = read_line(fdopen(cToP, "r"));
+    if (input) {
+        printf("%s\n", input);
+        free(input);
+    } else {
+        printf("<EOF>\n");
+    }
+
     fflush(stdout);
 }
 
