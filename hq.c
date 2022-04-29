@@ -111,7 +111,7 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         close(cToP[PIPE_WRITE_END]); // close child to parent write end
 
         Child* child = init_child(childList, childId, args[1],
-                pToC[PIPE_READ_END], cToP[PIPE_WRITE_END]);
+                pToC[PIPE_WRITE_END], cToP[PIPE_READ_END]);
         
         printf("New Job ID [%d] created\n", child->jobId);
         fflush(stdout);
