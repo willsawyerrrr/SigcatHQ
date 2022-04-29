@@ -313,8 +313,10 @@ int validate_numerical_arg(char* arg, int allowFractional) {
             return 0;
         }
     }
-
-    return 1;
+    
+    // if arg is empty, the loop will be skipped and we'll make it here, so
+    // only return 1 (true) if the string is non-zero
+    return strlen(arg); 
 }
 
 int validate_jobid(char* jobId, ChildList* childList){
