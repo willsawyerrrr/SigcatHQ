@@ -51,37 +51,35 @@ int main() {
 }
 
 void parse(char* command, ChildList* childList) {
-    int* numArgs = malloc(sizeof(int));
-    char** args = split_space_not_quote(command, numArgs);
+    int numArgs;
+    char** args = split_space_not_quote(command, &numArgs);
 
-    if (!*numArgs) {
-        free(numArgs);
+    if (!numArgs) {
         return;
     }
     
     char* program = args[0];
 
     if (!strcmp(program, "spawn")) {
-        spawn(*numArgs, args, childList);
+        spawn(numArgs, args, childList);
     } else if (!strcmp(program, "report")) {
-        report(*numArgs, args, childList);
+        report(numArgs, args, childList);
     } else if (!strcmp(program, "signal")) {
-        send_signal(*numArgs, args, childList);
+        send_signal(numArgs, args, childList);
     } else if (!strcmp(program, "sleep")) {
-        sleep_hq(*numArgs, args, childList);
+        sleep_hq(numArgs, args, childList);
     } else if (!strcmp(program, "send")) {
-        send(*numArgs, args, childList);
+        send(numArgs, args, childList);
     } else if (!strcmp(program, "rcv")) {
-        rcv(*numArgs, args, childList);
+        rcv(numArgs, args, childList);
     } else if (!strcmp(program, "eof")) {
-        eof(*numArgs, args, childList);
+        eof(numArgs, args, childList);
     } else if (!strcmp(program, "cleanup")) {
         cleanup(childList);
     } else {
         printf("Error: Invalid command\n");
     }
 
-    free(numArgs);
     free(args);
 }
 
