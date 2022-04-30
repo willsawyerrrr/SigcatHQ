@@ -298,6 +298,11 @@ int validate_num_args(int minExpected, int given) {
 }
 
 int validate_numerical_arg(char* arg, int allowFractional) {
+    // skip leading whitespace by moving the pointer to the beginning of arg
+    while (arg[0] == ' ') {
+        arg++;
+    }
+
     for (int i = 0; arg[i]; i++) {
         if (!isdigit(arg[i])
                 && (!allowFractional || arg[i] != '.')) {
