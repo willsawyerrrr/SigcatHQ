@@ -317,8 +317,7 @@ int validate_numerical_arg(char* arg, int allowFractional) {
 
 int validate_jobid(char* jobId, ChildList* childList){
     if (validate_numerical_arg(jobId, 0)
-            && isdigit(jobId[0])
-            && get_child_by_jobid(atoi(jobId), childList)) {
+            && (atoi(jobId) < childList->numChildren)) {
         return 1;
     }
     printf("Error: Invalid job\n");
@@ -328,7 +327,6 @@ int validate_jobid(char* jobId, ChildList* childList){
 
 int validate_signum(char* signum) {
     if (validate_numerical_arg(signum, 0)
-            && isdigit(signum[0])
             && atoi(signum) >= 1 && atoi(signum) <= 31) {
         return 1;
     }
