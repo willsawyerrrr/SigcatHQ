@@ -12,12 +12,10 @@ EXECS = sigcat hq		# EXECutable fileS
 
 all: sigcat hq tidy
 
-${EXECS}: %: %.o
-
-${OBJS}: %.o: %.c %.h
+${EXECS}: %: %.c %.h
 
 tidy:
 	@rm -f ${PCHS} ${OBJS}
 
 clean:
-	@rm -rf ${PCHS} ${OBJS} ${EXECS} testfiles
+	@rm -f ${PCHS} ${OBJS} ${EXECS} testfiles
