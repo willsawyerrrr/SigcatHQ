@@ -148,24 +148,8 @@ void report(int numArgs, char** args, ChildList* childList) {
 }
 
 void report_single(Child* child) {
-    int statusCode;
-    char* status = child->status;
-    
-    // Only write to child's status string if the last status was running;
-    // otherwise, the last assigned status was exited or signalled, both of
-    // which cannot change. Hence, the previous status is reused.
-    if (!strcmp(status, "running")
-            && waitpid(child->processId, &statusCode, WNOHANG)) {
-        if (WIFEXITED(statusCode)) { // statusCode => exited
-            sprintf(status, "exited(%d)", WEXITSTATUS(statusCode));
-        } else if (WIFSIGNALED(statusCode)) { // statusCode => was sent signal
-            sprintf(status, "signalled(%d)", WTERMSIG(statusCode));
-        } else {
-            strcpy(status, "running");
-        }
-    }
-
-    printf("[%d] %s:%s\n", child->jobId, child->programName, status);
+    wait_on_child(child);
+    printf("[%d] %s:%s\n", child->jobId, child->programName, child->status);
     fflush(stdout);
 }
 
@@ -284,7 +268,7 @@ void cleanup(ChildList* childList) {
     for (int i = 0; children[i]; i++) {
         pid_t processId = children[i]->processId;
         kill(processId, SIGKILL);
-        waitpid(processId, NULL, 0);
+        wait_on_child(children[i]);
     }
 }
 
@@ -373,6 +357,25 @@ Child* init_child(ChildList* childList, pid_t processId, char* programName,
     childList->children[childList->numChildren - 1] = child;
 
     return child;
+}
+
+void wait_on_child(Child* child) {
+    int statusCode;
+    char* status = child->status;
+    
+    // Only write to child's status string if the last status was running;
+    // otherwise, the last assigned status was exited or signalled, both of
+    // which cannot change. Hence, the previous status is reused.
+    if (!strcmp(status, "running")
+            && waitpid(child->processId, &statusCode, WNOHANG)) {
+        if (WIFEXITED(statusCode)) { // statusCode => exited
+            sprintf(status, "exited(%d)", WEXITSTATUS(statusCode));
+        } else if (WIFSIGNALED(statusCode)) { // statusCode => was sent signal
+            sprintf(status, "signalled(%d)", WTERMSIG(statusCode));
+        } else {
+            strcpy(status, "running");
+        }
+    }
 }
 
 void free_child_list(ChildList* childList) {

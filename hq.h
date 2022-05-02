@@ -283,6 +283,8 @@ ChildList* init_child_list();
 Child* init_child(ChildList* childList, pid_t processId, char* programName,
         int pToC, int cToP);
 
+void wait_on_child(Child* child);
+
 /*
  * Frees the given ChildList and all of its children.
  */
