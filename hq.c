@@ -25,57 +25,58 @@
 #define PIPE_WRITE_END 1
 #define PIPE_READ_END 0
 
-int main() {
-    ignore_signals();
+/* Stores information about child processes created by the spawn command. */
+ChildList* childList;
 
-    ChildList* childList = init_child_list();
+int main() {
+    set_handlers();
+
+    childList = init_child_list();
 
     char* input;
     printf("> ");
     fflush(stdout);
     input = read_line(stdin);
     while (input) { // haven't received EOF
-        if (strcmp(input, "")) { // if input is non-empty
-            parse(input, childList);
-        }
+        parse(input);
         free(input);
         printf("> ");
         fflush(stdout);
         input = read_line(stdin);
     }
 
-    cleanup(childList);
-    free_child_list(childList);
+    cleanup();
+    free_child_list();
      
     return EXIT_SUCCESS;
 }
 
-void parse(char* command, ChildList* childList) {
+void parse(char* command) {
     int numArgs;
     char** args = split_space_not_quote(command, &numArgs);
 
-    if (!numArgs) {
+    if (!numArgs) { // if command is neither empty nor whitespace-only
         return;
     }
     
     char* program = args[0];
 
     if (!strcmp(program, "spawn")) {
-        spawn(numArgs, args, childList);
+        spawn(numArgs, args);
     } else if (!strcmp(program, "report")) {
-        report(numArgs, args, childList);
+        report(numArgs, args);
     } else if (!strcmp(program, "signal")) {
-        send_signal(numArgs, args, childList);
+        send_signal(numArgs, args);
     } else if (!strcmp(program, "sleep")) {
-        sleep_hq(numArgs, args, childList);
+        sleep_hq(numArgs, args);
     } else if (!strcmp(program, "send")) {
-        send(numArgs, args, childList);
+        send(numArgs, args);
     } else if (!strcmp(program, "rcv")) {
-        rcv(numArgs, args, childList);
+        rcv(numArgs, args);
     } else if (!strcmp(program, "eof")) {
-        eof(numArgs, args, childList);
+        eof(numArgs, args);
     } else if (!strcmp(program, "cleanup")) {
-        cleanup(childList);
+        cleanup();
     } else {
         printf("Error: Invalid command\n");
     }
@@ -83,17 +84,23 @@ void parse(char* command, ChildList* childList) {
     free(args);
 }
 
-void ignore_signals() {
+void set_handlers() {
     struct sigaction ignore;
-    memset(&ignore, 0, sizeof(ignore));
+    memset(&ignore, 0, sizeof(struct sigaction));
     ignore.sa_handler = SIG_IGN;
     ignore.sa_flags = SA_RESTART;
-    sigaction(SIGINT, &ignore, 0);
-    sigaction(SIGPIPE, &ignore, 0);
+    sigaction(SIGINT, &ignore, NULL);
+    sigaction(SIGPIPE, &ignore, NULL);
+
+    struct sigaction reapChild;
+    memset(&reapChild, 0, sizeof(struct sigaction));
+    reapChild.sa_sigaction = reap_child;
+    reapChild.sa_flags = SA_RESTART | SA_SIGINFO;
+    sigaction(SIGCHLD, &reapChild, NULL);
 }
 
-void spawn(int numArgs, char** args, ChildList* childList) {
-    if (!validate_spawn_args(numArgs, args, childList)) {
+void spawn(int numArgs, char** args) {
+    if (!validate_spawn_args(numArgs, args)) {
         return;
     }
 
@@ -108,8 +115,8 @@ void spawn(int numArgs, char** args, ChildList* childList) {
         close(pToC[PIPE_READ_END]); // close parent to child read end
         close(cToP[PIPE_WRITE_END]); // close child to parent write end
 
-        Child* child = init_child(childList, childId, args[1],
-                pToC[PIPE_WRITE_END], cToP[PIPE_READ_END]);
+        Child* child = init_child(childId, args[1], pToC[PIPE_WRITE_END],
+                cToP[PIPE_READ_END]);
         
         printf("New Job ID [%d] created\n", child->jobId);
         fflush(stdout);
@@ -127,18 +134,18 @@ void spawn(int numArgs, char** args, ChildList* childList) {
     }
 }
 
-int validate_spawn_args(int numArgs, char** args, ChildList* childList) {
+int validate_spawn_args(int numArgs, char** args) {
     return validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs);
 }
 
-void report(int numArgs, char** args, ChildList* childList) {
-    if (!validate_report_args(numArgs, args, childList)) {
+void report(int numArgs, char** args) {
+    if (!validate_report_args(numArgs, args)) {
         return;
     }
     Child** children = childList->children;
     printf("[Job] cmd:status\n");
     if (numArgs > 1) {
-        Child* child = get_child_by_jobid(atoi(args[1]), childList);
+        Child* child = get_child_by_jobid(atoi(args[1]));
         report_single(child);
     } else {
         for (int i = 0; children[i]; i++) {
@@ -153,38 +160,38 @@ void report_single(Child* child) {
     fflush(stdout);
 }
 
-int validate_report_args(int numArgs, char** args, ChildList* childList) {
-    return (numArgs == 1 || validate_jobid(args[1], childList));
+int validate_report_args(int numArgs, char** args) {
+    return (numArgs == 1 || validate_jobid(args[1]));
 }
 
-void send_signal(int numArgs, char** args, ChildList* childList) {
-    if (!validate_signal_args(numArgs, args, childList)) {
+void send_signal(int numArgs, char** args) {
+    if (!validate_signal_args(numArgs, args)) {
         return;
     }
 
-    Child* child = get_child_by_jobid(atoi(args[1]), childList);
+    Child* child = get_child_by_jobid(atoi(args[1]));
     int signum = atoi(args[2]);
 
     kill(child->processId, signum);
 }
 
-int validate_signal_args(int numArgs, char** args, ChildList* childList) {
+int validate_signal_args(int numArgs, char** args) {
     return (
             validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)
-            && validate_jobid(args[1], childList)
+            && validate_jobid(args[1])
             && validate_signum(args[2])
             );
 }
 
-void sleep_hq(int numArgs, char** args, ChildList* childList) {
-    if (!validate_sleep_args(numArgs, args, childList)) {
+void sleep_hq(int numArgs, char** args) {
+    if (!validate_sleep_args(numArgs, args)) {
         return;
     }
 
     sleep(strtod(args[1], NULL));
 }
 
-int validate_sleep_args(int numArgs, char** args, ChildList* childList) {
+int validate_sleep_args(int numArgs, char** args) {
     if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
         return 0;
     } else if (!validate_numerical_arg(args[1], 1)
@@ -197,31 +204,31 @@ int validate_sleep_args(int numArgs, char** args, ChildList* childList) {
     return 1;
 }
 
-void send(int numArgs, char** args, ChildList* childList) {
-    if (!validate_send_args(numArgs, args, childList)) {
+void send(int numArgs, char** args) {
+    if (!validate_send_args(numArgs, args)) {
         return;
     }
     
     int jobId = atoi(args[1]);
-    Child* child = get_child_by_jobid(jobId, childList);
+    Child* child = get_child_by_jobid(jobId);
     write(child->pToC, args[2], strlen(args[2]) + 1);
     write(child->pToC, "\n", 2);
 }
 
-int validate_send_args(int numArgs, char** args, ChildList* childList) {
+int validate_send_args(int numArgs, char** args) {
     return (
             validate_num_args(SEND_MIN_EXP_ARGS, numArgs)
-            && validate_jobid(args[1], childList)
+            && validate_jobid(args[1])
             );
 }
 
-void rcv(int numArgs, char** args, ChildList* childList) {
-    if (!validate_rcv_args(numArgs, args, childList)) {
+void rcv(int numArgs, char** args) {
+    if (!validate_rcv_args(numArgs, args)) {
         return;
     }
 
     int jobId = atoi(args[1]);
-    Child* child = get_child_by_jobid(jobId, childList);
+    Child* child = get_child_by_jobid(jobId);
     int cToP = child->cToP;
 
     if (!is_ready(cToP)) {
@@ -241,29 +248,29 @@ void rcv(int numArgs, char** args, ChildList* childList) {
     fflush(stdout);
 }
 
-int validate_rcv_args(int numArgs, char** args, ChildList* childList) {
+int validate_rcv_args(int numArgs, char** args) {
     return (validate_num_args(RCV_MIN_EXP_ARGS, numArgs)
-            && validate_jobid(args[1], childList)
+            && validate_jobid(args[1])
             );
 }
 
-void eof(int numArgs, char** args, ChildList* childList) {
-    if (!validate_eof_args(numArgs, args, childList)) {
+void eof(int numArgs, char** args) {
+    if (!validate_eof_args(numArgs, args)) {
         return;
     }
 
     int jobId = atoi(args[1]);
-    Child* child = get_child_by_jobid(jobId, childList);
+    Child* child = get_child_by_jobid(jobId);
     close(child->pToC);
 }
 
-int validate_eof_args(int numArgs, char** args, ChildList* childList) {
+int validate_eof_args(int numArgs, char** args) {
     return (validate_num_args(EOF_MIN_EXP_ARGS, numArgs)
-            && validate_jobid(args[1], childList)
+            && validate_jobid(args[1])
             );
 }
 
-void cleanup(ChildList* childList) {
+void cleanup() {
     Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
         pid_t processId = children[i]->processId;
@@ -299,7 +306,7 @@ int validate_numerical_arg(char* arg, int allowFractional) {
     return strlen(arg); 
 }
 
-int validate_jobid(char* jobId, ChildList* childList){
+int validate_jobid(char* jobId){
     if (validate_numerical_arg(jobId, 0)
             && (atoi(jobId) < childList->numChildren)) {
         return 1;
@@ -319,10 +326,21 @@ int validate_signum(char* signum) {
     return 0;
 }
 
-Child* get_child_by_jobid(int jobId, ChildList* childList) {
+Child* get_child_by_jobid(int jobId) {
     Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
         if (children[i]->jobId == jobId) {
+            return children[i];
+        }
+    }
+
+    return NULL;
+}
+
+Child* get_child_by_pid(int processId) {
+    Child** children = childList->children;
+    for (int i = 0; children[i]; i++) {
+        if (children[i]->processId == processId) {
             return children[i];
         }
     }
@@ -338,8 +356,7 @@ ChildList* init_child_list() {
     return childList;
 }
 
-Child* init_child(ChildList* childList, pid_t processId, char* programName,
-        int pToC, int cToP) {
+Child* init_child(pid_t processId, char* programName, int pToC, int cToP) {
     // create child
     Child* child = malloc(sizeof(Child));
     child->processId = processId;
@@ -363,14 +380,13 @@ void wait_on_child(Child* child) {
     int statusCode;
     char* status = child->status;
     
-    // Only write to child's status string if the last status was running;
-    // otherwise, the last assigned status was exited or signalled, both of
-    // which cannot change. Hence, the previous status is reused.
+    // only write wait on child and write to its status string if the last
+    // status was running
     if (!strcmp(status, "running")
             && waitpid(child->processId, &statusCode, WNOHANG)) {
         if (WIFEXITED(statusCode)) { // statusCode => exited
             sprintf(status, "exited(%d)", WEXITSTATUS(statusCode));
-        } else if (WIFSIGNALED(statusCode)) { // statusCode => was sent signal
+        } else if (WIFSIGNALED(statusCode)) { // statusCode => signalled
             sprintf(status, "signalled(%d)", WTERMSIG(statusCode));
         } else {
             strcpy(status, "running");
@@ -378,7 +394,12 @@ void wait_on_child(Child* child) {
     }
 }
 
-void free_child_list(ChildList* childList) {
+void reap_child(int signum, siginfo_t* info, void* ucontext) {
+    Child* child = get_child_by_pid(info->si_pid);
+    wait_on_child(child);
+}
+
+void free_child_list() {
     Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
         Child* child = children[i];

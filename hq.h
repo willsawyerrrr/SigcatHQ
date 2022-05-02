@@ -1,6 +1,7 @@
 #ifndef HQ_H
 #define HQ_H
 
+#include <signal.h>
 #include <sys/types.h>
 
 /*
@@ -35,15 +36,16 @@ typedef struct {
 } ChildList;
 
 /*
- * Sets a handler to ignore the interrupt and broken pipe signals.
+ * Sets handlers to ignore the interrupt and broken pipe signals and reap
+ * child process upon receiving the child signal.
  */
-void ignore_signals();
+void set_handlers();
 
 /*
  * Parses the given command string. If the first argument of the command string
  * is the name of a command, that command is called.
  */
-void parse(char* command, ChildList* childList);
+void parse(char* command);
 
 /*
  * Usage: spawn <program> [<arg1>] [<arg2>] ...
@@ -54,7 +56,7 @@ void parse(char* command, ChildList* childList);
  * with the send and rcv commands, respectively. The new process's standard
  * error is unchanged.
  */
-void spawn(int numArgs, char** args, ChildList* childList);
+void spawn(int numArgs, char** args);
 
 /*
  * Determines whether the given command string is valid to execute the spawn
@@ -67,7 +69,7 @@ void spawn(int numArgs, char** args, ChildList* childList);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_spawn_args(int numArgs, char** args, ChildList* childList);
+int validate_spawn_args(int numArgs, char** args);
 
 /*
  * Usage: report [<jobid>]
@@ -75,7 +77,7 @@ int validate_spawn_args(int numArgs, char** args, ChildList* childList);
  * Reports on the status of the job with the given job ID or all jobs if the
  * jobid parameter is not provided.
  */
-void report(int numArgs, char** args, ChildList* childList);
+void report(int numArgs, char** args);
 
 /*
  * Reports on the given child process's status. The format of the resultant
@@ -101,14 +103,14 @@ void report_single(Child* child);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_report_args(int numArgs, char** args, ChildList* childList);
+int validate_report_args(int numArgs, char** args);
 
 /*
  * Usage: signal <jobid> <signum>
  *
  * Send the signal with the given signum to the job with the given job ID.
  */
-void send_signal(int numArgs, char** args, ChildList* childList);
+void send_signal(int numArgs, char** args);
 
 /*
  * Determines whether the given command string is valid to execute the signal
@@ -123,7 +125,7 @@ void send_signal(int numArgs, char** args, ChildList* childList);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_signal_args(int numArgs, char** args, ChildList* childList);
+int validate_signal_args(int numArgs, char** args);
 
 /*
  * Usage: sleep <seconds>
@@ -131,7 +133,7 @@ int validate_signal_args(int numArgs, char** args, ChildList* childList);
  * Causes this process to sleep for the given number of seconds. The specified
  * number of seconds can be integral or fractional.
  */
-void sleep_hq(int numArgs, char** args, ChildList* childList);
+void sleep_hq(int numArgs, char** args);
 
 /*
  * Determines whether the given command string is valid to execute the sleep
@@ -144,7 +146,7 @@ void sleep_hq(int numArgs, char** args, ChildList* childList);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_sleep_args(int numArgs, char** args, ChildList* childList);
+int validate_sleep_args(int numArgs, char** args);
 
 /*
  * Usage: send <jobid> <text>
@@ -152,7 +154,7 @@ int validate_sleep_args(int numArgs, char** args, ChildList* childList);
  * Sends the given text to the job with the given job ID. Strings containing
  * spaces must be quoted in double quotes.
  */
-void send(int numArgs, char** args, ChildList* childList);
+void send(int numArgs, char** args);
 
 /*
  * Determines whether the given command string is valid to execute the send
@@ -167,7 +169,7 @@ void send(int numArgs, char** args, ChildList* childList);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_send_args(int numArgs, char** args, ChildList* childList);
+int validate_send_args(int numArgs, char** args);
 
 /*
  * Usage: rcv <jobid>
@@ -175,7 +177,7 @@ int validate_send_args(int numArgs, char** args, ChildList* childList);
  * Attempts to read one line of text from the job with the given job ID and
  * displays it to this process's standard out.
  */
-void rcv(int numArgs, char** args, ChildList* childList);
+void rcv(int numArgs, char** args);
 
 /*
  * Determines whether the given command string is valid to execute the rcv
@@ -189,7 +191,7 @@ void rcv(int numArgs, char** args, ChildList* childList);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_rcv_args(int numArgs, char** args, ChildList* childList);
+int validate_rcv_args(int numArgs, char** args);
 
 /*
  * Usage: eof <jobid>
@@ -197,7 +199,7 @@ int validate_rcv_args(int numArgs, char** args, ChildList* childList);
  * Closes the pipe connected to the standard input of the job with the given
  * job ID, causing it to receive EOF on its next read attempt.
  */
-void eof(int numArgs, char** args, ChildList* childList);
+void eof(int numArgs, char** args);
 
 /*
  * Determines whether the given command string is valid to execute the eof
@@ -211,7 +213,7 @@ void eof(int numArgs, char** args, ChildList* childList);
  *
  * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
  */
-int validate_eof_args(int numArgs, char** args, ChildList* childList);
+int validate_eof_args(int numArgs, char** args);
 
 /*
  * Usage: cleanup()
@@ -247,7 +249,7 @@ int validate_numerical_arg(char* arg, int allowFractional);
  * Returns 1 (true) if and only if arg represents the job ID of a child of this
  * process; 0 (false) otherwise.
  */
-int validate_jobid(char* jobId, ChildList* childList);
+int validate_jobid(char* jobId);
 
 /*
  * Determines whether the given integer is a valid signal number. A signal
@@ -262,7 +264,14 @@ int validate_signum(char* signum);
  *
  * If no child has the given job ID, NULL is returned.
  */
-Child* get_child_by_jobid(int jobId, ChildList* childList);
+Child* get_child_by_jobid(int jobId);
+
+/*
+ * Returns the child process specified by the given process ID.
+ *
+ * If no child has the process job ID, NULL is returned.
+ */
+Child* get_child_by_pid(int processId);
 
 /*
  * Returns a malloc()'d pointer to an empty child list with count
@@ -280,14 +289,28 @@ ChildList* init_child_list();
  * The caller of this function is responsible for freeing the memory allocated
  * for the child.
  */
-Child* init_child(ChildList* childList, pid_t processId, char* programName,
-        int pToC, int cToP);
+Child* init_child(pid_t processId, char* programName, int pToC, int cToP);
 
+/*
+ * Waits on the given child, reaping it and urassigning the appropriate string
+ * to the child's status member for use in report().
+ *
+ * If the status string has been changed from the initial "running", the child
+ * must have been waited on after being either exited or signalled and hence is
+ * not waited on again.
+ */
 void wait_on_child(Child* child);
+
+/*
+ * Reaps the child which initiated the SIGCHLD signal which caused this
+ * function call. Handler function only.
+ */
+void reap_child(int signum, siginfo_t* info, void* ucontext);
 
 /*
  * Frees the given ChildList and all of its children.
  */
-void free_child_list(ChildList* childList);
+void free_child_list();
 
 #endif
+
