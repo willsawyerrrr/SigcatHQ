@@ -57,6 +57,7 @@ Child* init_child(pid_t processId, char* programName, int pToC, int cToP) {
     strcpy(child->status, "running");
     child->pToC = pToC;
     child->cToP = cToP;
+    child->readStream = fdopen(cToP, "r");
         
     // add the child to the list
     childList->children = realloc(childList->children,
@@ -95,6 +96,7 @@ void free_child_list() {
         Child* child = children[i];
         free(child->programName);
         free(child->status);
+        fclose(child->readStream);
         free(child);
     }
     free(children);

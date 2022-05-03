@@ -1,6 +1,7 @@
 #ifndef CHILD_H
 #define CHILD_H
 
+#include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
 
@@ -16,13 +17,15 @@ typedef struct {
     char* programName;
     /* Status of the child process, as used within the report command.  */
     char* status;
-    /* File descriptor for the pipe used to write from the parent (this hq
-     * process) to this child process. */
+    /* File descriptor for the pipe used to write from the parent to this child
+     * process. */
     int pToC;
     /* File descriptor for the pipe used to read from this child within its
-     * parent (this hq process).
-     */
+     * parent. */
     int cToP;
+    /* File stream of the pipe used to read from this child within its parent.
+     */
+    FILE* readStream;
 } Child;
 
 /*

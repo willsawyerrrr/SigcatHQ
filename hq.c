@@ -227,15 +227,14 @@ void rcv(int numArgs, char** args) {
 
     int jobId = atoi(args[1]);
     Child* child = get_child_by_jobid(jobId);
-    int cToP = child->cToP;
 
-    if (!is_ready(cToP)) {
+    if (!is_ready(child->cToP)) {
         printf("<no input>\n");
         fflush(stdout);
         return;
     }
 
-    char* input = read_line(fdopen(cToP, "r"));
+    char* input = read_line(child->readStream);
     if (input) {
         printf("%s\n", input);
         free(input);
