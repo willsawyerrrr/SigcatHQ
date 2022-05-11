@@ -25,7 +25,7 @@ void parse(char* command);
  * any. Arguments or program names containing spacesmay be quoted in double
  * quotes. Standard input to and output from the new proceed can be accessed
  * with the send and rcv commands, respectively. The new process's standard
- * error is unchanged.
+ * error is linked to this process's standard error, by default.
  */
 void spawn(int numArgs, char** args);
 
@@ -49,18 +49,6 @@ int validate_spawn_args(int numArgs, char** args);
  * jobid parameter is not provided.
  */
 void report(int numArgs, char** args);
-
-/*
- * Reports on the given child process's status. The format of the resultant
- * string is:
- *      [Job] cmd:status
- * Where Job is the jobId of the process, cmd is the name of the program the
- * process is executing and status is the status of the process and is either:
- *      running             ;
- *      exited(code)        , where code is the exit code; or
- *      signalled(signum)   , where signum is the signal number.
- */
-void report_single(Child* child);
 
 /*
  * Determines whether the given command string is valid to execute the report

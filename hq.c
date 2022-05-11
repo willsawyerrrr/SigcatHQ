@@ -23,12 +23,11 @@
 #define PIPE_WRITE_END 1
 #define PIPE_READ_END 0
 
-/* Stores information about child processes created by the spawn command. */
+/* Stores child processes created by the spawn command. */
 ChildList* childList;
 
 int main() {
     set_handlers();
-
     childList = init_child_list();
 
     char* input;
@@ -49,11 +48,26 @@ int main() {
     return EXIT_SUCCESS;
 }
 
+void set_handlers() {
+    struct sigaction ignore;
+    memset(&ignore, 0, sizeof(struct sigaction));
+    ignore.sa_handler = SIG_IGN;
+    ignore.sa_flags = SA_RESTART;
+    sigaction(SIGINT, &ignore, NULL);
+    sigaction(SIGPIPE, &ignore, NULL);
+
+    struct sigaction reapChild;
+    memset(&reapChild, 0, sizeof(struct sigaction));
+    reapChild.sa_sigaction = reap_child;
+    reapChild.sa_flags = SA_RESTART | SA_SIGINFO;
+    sigaction(SIGCHLD, &reapChild, NULL);
+}
+
 void parse(char* command) {
     int numArgs;
     char** args = split_space_not_quote(command, &numArgs);
 
-    if (!numArgs) { // if command is neither empty nor whitespace-only
+    if (!numArgs) { // if command is either empty or whitespace-only
         return;
     }
     
@@ -82,21 +96,6 @@ void parse(char* command) {
     free(args);
 }
 
-void set_handlers() {
-    struct sigaction ignore;
-    memset(&ignore, 0, sizeof(struct sigaction));
-    ignore.sa_handler = SIG_IGN;
-    ignore.sa_flags = SA_RESTART;
-    sigaction(SIGINT, &ignore, NULL);
-    sigaction(SIGPIPE, &ignore, NULL);
-
-    struct sigaction reapChild;
-    memset(&reapChild, 0, sizeof(struct sigaction));
-    reapChild.sa_sigaction = reap_child;
-    reapChild.sa_flags = SA_RESTART | SA_SIGINFO;
-    sigaction(SIGCHLD, &reapChild, NULL);
-}
-
 void spawn(int numArgs, char** args) {
     if (!validate_spawn_args(numArgs, args)) {
         return;
@@ -110,8 +109,9 @@ void spawn(int numArgs, char** args) {
 
     pid_t childId = fork();
     if (childId) { // parent
-        close(pToC[PIPE_READ_END]); // close parent to child read end
-        close(cToP[PIPE_WRITE_END]); // close child to parent write end
+        // close child's ends of pipes
+        close(pToC[PIPE_READ_END]);
+        close(cToP[PIPE_WRITE_END]);
 
         Child* child = init_child(childId, args[1], pToC[PIPE_WRITE_END],
                 cToP[PIPE_READ_END]);
@@ -119,13 +119,15 @@ void spawn(int numArgs, char** args) {
         printf("New Job ID [%d] created\n", child->jobId);
         fflush(stdout);
     } else { // child
-        close(pToC[PIPE_WRITE_END]); // close parent to child write end
-        close(cToP[PIPE_READ_END]); // close child to parent read end
+        // close parent's ends of pipes
+        close(pToC[PIPE_WRITE_END]);
+        close(cToP[PIPE_READ_END]);
 
+        // allocate standout I/O files to pipes with parent
         dup2(pToC[PIPE_READ_END], STDIN_FILENO);
         dup2(cToP[PIPE_WRITE_END], STDOUT_FILENO);
         
-        execvp(args[1], &args[1]);
+        execvp(args[1], &args[1]); // args[0] == "spawn", so skip it
 
         // this point is only reached if the above exec() call failed
         exit(EXIT_EXEC_FAIL);
@@ -144,18 +146,12 @@ void report(int numArgs, char** args) {
     printf("[Job] cmd:status\n");
     if (numArgs > 1) {
         Child* child = get_child_by_jobid(atoi(args[1]));
-        report_single(child);
+        report_single_child(child);
     } else {
         for (int i = 0; children[i]; i++) {
-            report_single(children[i]);
+            report_single_child(children[i]);
         }
     }
-}
-
-void report_single(Child* child) {
-    wait_on_child(child);
-    printf("[%d] %s:%s\n", child->jobId, child->programName, child->status);
-    fflush(stdout);
 }
 
 int validate_report_args(int numArgs, char** args) {
@@ -209,7 +205,7 @@ void send(int numArgs, char** args) {
     
     int jobId = atoi(args[1]);
     Child* child = get_child_by_jobid(jobId);
-    write(child->pToC, args[2], strlen(args[2]) + 1);
+    write(child->pToC, args[2], strlen(args[2]));
     write(child->pToC, "\n", 2);
 }
 
@@ -270,8 +266,7 @@ int validate_eof_args(int numArgs, char** args) {
 void cleanup() {
     Child** children = childList->children;
     for (int i = 0; children[i]; i++) {
-        pid_t processId = children[i]->processId;
-        kill(processId, SIGKILL);
+        kill(children[i]->processId, SIGKILL);
         wait_on_child(children[i]);
     }
 }

@@ -41,7 +41,7 @@ Child* get_child_by_pid(int processId) {
 ChildList* init_child_list() {
     ChildList* childList = malloc(sizeof(ChildList));
     childList->numChildren = 0;
-    Child** children = malloc(sizeof(Child));
+    Child** children = malloc(sizeof(Child*));
     childList->children = children;
     return childList;
 }
@@ -67,12 +67,18 @@ Child* init_child(pid_t processId, char* programName, int pToC, int cToP) {
     return child;
 }
 
+void report_single_child(Child* child) {
+    wait_on_child(child);
+    printf("[%d] %s:%s\n", child->jobId, child->programName, child->status);
+    fflush(stdout);
+}
+
 void wait_on_child(Child* child) {
     int statusCode;
     char* status = child->status;
     
-    // only write wait on child and write to its status string if the last
-    // status was running
+    // only wait on child and write to its status string if the last status
+    // was running - if it has been changed already, it cannot change again
     if (!strcmp(status, "running")
             && waitpid(child->processId, &statusCode, WNOHANG)) {
         if (WIFEXITED(statusCode)) { // statusCode => exited
