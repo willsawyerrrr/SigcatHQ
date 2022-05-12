@@ -4,6 +4,7 @@
 #include <csse2310a3.h>
 #include <ctype.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -134,7 +135,7 @@ void spawn(int numArgs, char** args) {
     }
 }
 
-int validate_spawn_args(int numArgs, char** args) {
+bool validate_spawn_args(int numArgs, char** args) {
     return validate_num_args(SPAWN_MIN_EXP_ARGS, numArgs);
 }
 
@@ -154,7 +155,7 @@ void report(int numArgs, char** args) {
     }
 }
 
-int validate_report_args(int numArgs, char** args) {
+bool validate_report_args(int numArgs, char** args) {
     return (numArgs == 1 || validate_jobid(args[1]));
 }
 
@@ -169,7 +170,7 @@ void send_signal(int numArgs, char** args) {
     kill(child->processId, signum);
 }
 
-int validate_signal_args(int numArgs, char** args) {
+bool validate_signal_args(int numArgs, char** args) {
     return (
             validate_num_args(SIGNAL_MIN_EXP_ARGS, numArgs)
             && validate_jobid(args[1])
@@ -185,17 +186,17 @@ void sleep_hq(int numArgs, char** args) {
     sleep(strtod(args[1], NULL));
 }
 
-int validate_sleep_args(int numArgs, char** args) {
+bool validate_sleep_args(int numArgs, char** args) {
     if (!validate_num_args(SLEEP_MIN_EXP_ARGS, numArgs)) {
-        return 0;
+        return false;
     } else if (!validate_numerical_arg(args[1], 1)
             || (strtod(args[1], NULL) < 0)) {
         printf("Error: Invalid sleep time\n");
         fflush(stdout);
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 void send(int numArgs, char** args) {
@@ -209,7 +210,7 @@ void send(int numArgs, char** args) {
     write(child->pToC, "\n", 2);
 }
 
-int validate_send_args(int numArgs, char** args) {
+bool validate_send_args(int numArgs, char** args) {
     return (
             validate_num_args(SEND_MIN_EXP_ARGS, numArgs)
             && validate_jobid(args[1])
@@ -241,7 +242,7 @@ void rcv(int numArgs, char** args) {
     fflush(stdout);
 }
 
-int validate_rcv_args(int numArgs, char** args) {
+bool validate_rcv_args(int numArgs, char** args) {
     return (validate_num_args(RCV_MIN_EXP_ARGS, numArgs)
             && validate_jobid(args[1])
             );
@@ -257,7 +258,7 @@ void eof(int numArgs, char** args) {
     close(child->pToC);
 }
 
-int validate_eof_args(int numArgs, char** args) {
+bool validate_eof_args(int numArgs, char** args) {
     return (validate_num_args(EOF_MIN_EXP_ARGS, numArgs)
             && validate_jobid(args[1])
             );
@@ -271,16 +272,16 @@ void cleanup() {
     }
 }
 
-int validate_num_args(int minExpected, int given) {
+bool validate_num_args(int minExpected, int given) {
     if (given >= minExpected) {
-        return 1;
+        return true;
     }
     printf("Error: Insufficient arguments\n");
     fflush(stdout);
-    return 0;
+    return false;
 }
 
-int validate_numerical_arg(char* arg, int allowFractional) {
+bool validate_numerical_arg(char* arg, int allowFractional) {
     // skip leading whitespace by moving the pointer to the beginning of arg
     while (arg[0] == ' ') {
         arg++;
@@ -289,7 +290,7 @@ int validate_numerical_arg(char* arg, int allowFractional) {
     for (int i = 0; arg[i]; i++) {
         if (!isdigit(arg[i])
                 && (!allowFractional || arg[i] != '.')) {
-            return 0;
+            return false;
         }
     }
     
@@ -298,23 +299,23 @@ int validate_numerical_arg(char* arg, int allowFractional) {
     return strlen(arg); 
 }
 
-int validate_jobid(char* jobId){
+bool validate_jobid(char* jobId){
     if (validate_numerical_arg(jobId, 0)
             && (atoi(jobId) < childList->numChildren)) {
-        return 1;
+        return true;
     }
     printf("Error: Invalid job\n");
     fflush(stdout);
-    return 0;
+    return false;
 }
 
-int validate_signum(char* signum) {
+bool validate_signum(char* signum) {
     if (validate_numerical_arg(signum, 0)
             && atoi(signum) >= 1 && atoi(signum) <= 31) {
-        return 1;
+        return true;
     }
     printf("Error: Invalid signal\n");
     fflush(stdout);
-    return 0;
+    return false;
 }
 

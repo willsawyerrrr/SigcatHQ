@@ -4,6 +4,7 @@
 #include "child.h"
 
 #include <signal.h>
+#include <stdbool.h>
 #include <sys/types.h>
 
 /*
@@ -38,9 +39,9 @@ void spawn(int numArgs, char** args);
  *
  * All extraneous arguments are ignored.
  *
- * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
+ * Returns true if the command string is valid; false otherwise.
  */
-int validate_spawn_args(int numArgs, char** args);
+bool validate_spawn_args(int numArgs, char** args);
 
 /*
  * Usage: report [<jobid>]
@@ -60,9 +61,9 @@ void report(int numArgs, char** args);
  *
  * All extraneous arguments are ignored.
  *
- * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
+ * Returns true if the command string is valid; false otherwise.
  */
-int validate_report_args(int numArgs, char** args);
+bool validate_report_args(int numArgs, char** args);
 
 /*
  * Usage: signal <jobid> <signum>
@@ -82,9 +83,9 @@ void send_signal(int numArgs, char** args);
  *
  * All extraneous arguments are ignored.
  *
- * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
+ * Returns true if the command string is valid; false otherwise.
  */
-int validate_signal_args(int numArgs, char** args);
+bool validate_signal_args(int numArgs, char** args);
 
 /*
  * Usage: sleep <seconds>
@@ -103,9 +104,9 @@ void sleep_hq(int numArgs, char** args);
  *
  * All extraneous arguments are ignored.
  *
- * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
+ * Returns true if the command string is valid; false otherwise.
  */
-int validate_sleep_args(int numArgs, char** args);
+bool validate_sleep_args(int numArgs, char** args);
 
 /*
  * Usage: send <jobid> <text>
@@ -126,9 +127,9 @@ void send(int numArgs, char** args);
  *
  * All extraneous arguments are ignored.
  *
- * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
+ * Returns true if the command string is valid; false otherwise.
  */
-int validate_send_args(int numArgs, char** args);
+bool validate_send_args(int numArgs, char** args);
 
 /*
  * Usage: rcv <jobid>
@@ -148,9 +149,9 @@ void rcv(int numArgs, char** args);
  *
  * All extraneous arguments are ignored.
  *
- * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
+ * Returns true if the command string is valid; false otherwise.
  */
-int validate_rcv_args(int numArgs, char** args);
+bool validate_rcv_args(int numArgs, char** args);
 
 /*
  * Usage: eof <jobid>
@@ -170,9 +171,9 @@ void eof(int numArgs, char** args);
  *
  * All extraneous arguments are ignored.
  *
- * Returns 1 (true) if the command string is valid; 0 (false) otherwise.
+ * Returns true if the command string is valid; false otherwise.
  */
-int validate_eof_args(int numArgs, char** args);
+bool validate_eof_args(int numArgs, char** args);
 
 /*
  * Usage: cleanup()
@@ -186,37 +187,37 @@ void cleanup();
  * Determines whether the given number of arguments is valid, given the
  * expected number of arguments.
  *
- * Returns 1 (true) if and only if given >= minExpected; 0 (false) otherwise.
+ * Returns true if and only if given >= minExpected; false otherwise.
  */
-int validate_num_args(int minExpected, int given);
+bool validate_num_args(int minExpected, int given);
 
 /*
  * Determines whether the given argument represents a complete and valid
  * number. If allowFractional is set, the given argument may represent a
  * fractional number; otherwise, the argument must represent an integer.
  *
- * Returns 1 (true) if and only if arg is a valid and complete numerical
- * argument; 0 otherwise.
+ * Returns true if and only if arg is a valid and complete numerical argument;
+ * false otherwise.
  */
-int validate_numerical_arg(char* arg, int allowFractional);
+bool validate_numerical_arg(char* arg, int allowFractional);
 
 /*
  * Determines whether the given integer is a valid job ID. A valid job ID is
  * one which corresponds to a child in the given ChildList, created using the
  * spawn command.
  *
- * Returns 1 (true) if and only if arg represents the job ID of a child of this
- * process; 0 (false) otherwise.
+ * Returns true if and only if arg represents the job ID of a child of this
+ * process; false otherwise.
  */
-int validate_jobid(char* jobId);
+bool validate_jobid(char* jobId);
 
 /*
  * Determines whether the given integer is a valid signal number. A signal
  * number is valid if and only if it is between 1 and 31, inclusive.
  *
- * Returns 1 (true) if and only if arg is a valid signal number; 0 otherwise.
+ * Returns true if and only if arg is a valid signal number; false otherwise.
  */
-int validate_signum(char* signum);
+bool validate_signum(char* signum);
 
 #endif
 

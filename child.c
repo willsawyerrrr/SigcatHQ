@@ -10,8 +10,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-// longest possible status is null-terminated "signalled(XX)" (14 characters)
-#define MAX_STATUS_BUFFER_SIZE 14
+// longest possible status is null-terminated "signalled(XXX)" (15 characters)
+#define MAX_STATUS_BUFFER_SIZE 15
 
 /* Stores information about child processes created by the spawn command. */
 extern ChildList* childList;
